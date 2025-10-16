@@ -90,7 +90,7 @@ export function generatePDF(data: PDFData): Buffer {
 
   datasOrdenadas.forEach((data) => {
     const quartosData = quartosPorData[data];
-    const totalDia = quartosData.reduce((sum, q) => sum + parseFloat(q.quantidade), 0);
+    const totalDia = quartosData.length; // cada registro = 1 quarto
 
     // Verificar se precisa de nova página
     if (yPos > 270) {
@@ -111,7 +111,7 @@ export function generatePDF(data: PDFData): Buffer {
         minute: "2-digit",
       });
       
-      let texto = `  • ${hora} - ${quarto.quantidade} quarto(s)`;
+      let texto = `  • ${hora} - ${quarto.codigoQuarto}`;
       if (quarto.observacao) {
         texto += ` - ${quarto.observacao}`;
       }

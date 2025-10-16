@@ -21,11 +21,14 @@ export type InsertUser = typeof users.$inferInsert;
 /**
  * Tabela de quartos (trabalhos de taquigrafia)
  * Cada quarto tem 4 minutos de duração
+ * Agora registra códigos individuais (sessão-quarto) para auditoria
  */
 export const quartos = mysqlTable("quartos", {
   id: varchar("id", { length: 64 }).primaryKey(),
   userId: varchar("userId", { length: 64 }).notNull(),
-  quantidade: varchar("quantidade", { length: 10 }).notNull(), // quantidade de quartos registrados (ex: "1", "2", "0.5")
+  codigoQuarto: varchar("codigoQuarto", { length: 20 }).notNull(), // código do quarto (ex: "79777-8")
+  sessao: varchar("sessao", { length: 10 }).notNull(), // número da sessão (ex: "79777")
+  numeroQuarto: varchar("numeroQuarto", { length: 5 }).notNull(), // número do quarto (ex: "8")
   dataRegistro: timestamp("dataRegistro").notNull().defaultNow(), // data e hora do registro
   observacao: text("observacao"), // observações opcionais
   createdAt: timestamp("createdAt").defaultNow(),

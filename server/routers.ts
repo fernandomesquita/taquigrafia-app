@@ -24,18 +24,36 @@ export const appRouter = router({
   quartos: router({
     create: protectedProcedure
       .input(z.object({
-        quantidade: z.string(),
+        codigos: z.string(), // códigos separados por vírgula (ex: "79777-8, 79777-9, 79778-1")
         observacao: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const quarto = await db.createQuarto({
-          id: randomUUID(),
-          userId: ctx.user.id,
-          quantidade: input.quantidade,
-          observacao: input.observacao,
-          dataRegistro: new Date(),
-        });
-        return quarto;
+        // Processar códigos separados por vírgula
+        const codigosArray = input.codigos.split(',').map(c => c.trim()).filter(c => c.length > 0);
+        
+        const quartosCreated = [];
+        for (const codigo of codigosArray) {
+          // Validar formato sessão-quarto
+          const match = codigo.match(/^(\d+)-(\d+)$/);
+          if (!match) {
+            throw new Error(`Código inválido: ${codigo}. Use o formato SESSÃO-QUARTO (ex: 79777-8)`);
+          }
+          
+          const [_, sessao, numeroQuarto] = match;
+          
+          const quarto = await db.createQuarto({
+            id: randomUUID(),
+            userId: ctx.user.id,
+            codigoQuarto: codigo,
+            sessao,
+            numeroQuarto,
+            observacao: input.observacao,
+            dataRegistro: new Date(),
+          });
+          quartosCreated.push(quarto);
+        }
+        
+        return { quartos: quartosCreated, count: quartosCreated.length };
       }),
 
     list: protectedProcedure.query(async ({ ctx }) => {
@@ -109,7 +127,7 @@ export const appRouter = router({
         const metas = await db.getMetasDiariasByUserIdAndMonth(ctx.user.id, input.year, input.month);
 
         // Calcular estatísticas
-        const totalQuartos = quartos.reduce((sum, q) => sum + parseFloat(q.quantidade), 0);
+        const totalQuartos = quartos.length; // cada registro = 1 quarto
         const totalMinutos = totalQuartos * 4;
 
         // Calcular dias úteis

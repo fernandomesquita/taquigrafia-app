@@ -81,7 +81,7 @@ export default function Dashboard() {
 
   // Cálculos
   const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, quartosAgrupados } = useMemo(() => {
-    const total = quartos.reduce((sum, q) => sum + parseFloat(q.quantidade), 0);
+    const total = quartos.length; // cada registro = 1 quarto
     const minutos = total * 4;
 
     // Calcular dias úteis do mês (segunda a sexta)
@@ -153,11 +153,11 @@ export default function Dashboard() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quantidade || parseFloat(quantidade) <= 0) {
-      toast.error("Informe uma quantidade válida");
+    if (!quantidade || quantidade.trim() === "") {
+      toast.error("Informe os códigos dos quartos");
       return;
     }
-    createQuarto.mutate({ quantidade, observacao });
+    createQuarto.mutate({ codigos: quantidade, observacao });
   };
 
   return (
@@ -281,19 +281,17 @@ export default function Dashboard() {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="quantidade">Quantidade de Quartos</Label>
+                  <Label htmlFor="quantidade">Códigos dos Quartos</Label>
                   <Input
                     id="quantidade"
-                    type="number"
-                    step="0.5"
-                    min="0.5"
-                    placeholder="Ex: 1, 2, 5"
+                    type="text"
+                    placeholder="Ex: 79777-8, 79777-9, 79778-1"
                     value={quantidade}
                     onChange={(e) => setQuantidade(e.target.value)}
                     required
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Cada quarto = 4 minutos
+                    Formato: SESSÃO-QUARTO. Separe múltiplos códigos por vírgula. Cada quarto = 4 minutos
                   </p>
                 </div>
                 <div>
@@ -340,9 +338,9 @@ export default function Dashboard() {
                         >
                           <div className="flex-1">
                             <p className="font-medium">
-                              {quarto.quantidade} {parseFloat(quarto.quantidade) === 1 ? "quarto" : "quartos"}
+                              {quarto.codigoQuarto}
                               <span className="text-muted-foreground text-sm ml-2">
-                                ({parseFloat(quarto.quantidade) * 4} min)
+                                (4 min)
                               </span>
                             </p>
                             {quarto.observacao && (

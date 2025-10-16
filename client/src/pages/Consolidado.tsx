@@ -44,7 +44,7 @@ export default function Consolidado() {
       const quartos = queries[index].quartos.data || [];
       const metas = queries[index].metas.data || [];
 
-      const totalQuartos = quartos.reduce((sum, q) => sum + parseFloat(q.quantidade), 0);
+      const totalQuartos = quartos.length; // cada registro = 1 quarto
       const totalMinutos = totalQuartos * 4;
 
       // Calcular dias úteis do mês
