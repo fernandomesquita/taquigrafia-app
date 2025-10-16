@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, between, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertMetaDiaria, InsertQuarto, InsertUser, metasDiarias, quartos, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -85,4 +85,83 @@ export async function getUser(id: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ========== QUARTOS ==========
+
+export async function createQuarto(quarto: InsertQuarto) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(quartos).values(quarto);
+  return quarto;
+}
+
+export async function getQuartosByUserId(userId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.select().from(quartos).where(eq(quartos.userId, userId)).orderBy(desc(quartos.dataRegistro));
+}
+
+export async function getQuartosByUserIdAndDateRange(userId: string, startDate: Date, endDate: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.select().from(quartos)
+    .where(
+      and(
+        eq(quartos.userId, userId),
+        between(quartos.dataRegistro, startDate, endDate)
+      )
+    )
+    .orderBy(desc(quartos.dataRegistro));
+}
+
+export async function deleteQuarto(id: string, userId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(quartos).where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
+}
+
+// ========== METAS DIÁRIAS ==========
+
+export async function upsertMetaDiaria(meta: InsertMetaDiaria) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(metasDiarias).values(meta).onDuplicateKeyUpdate({
+    set: {
+      metaQuartos: meta.metaQuartos,
+      motivo: meta.motivo,
+      updatedAt: new Date(),
+    },
+  });
+  return meta;
+}
+
+export async function getMetaDiariaByUserIdAndDate(userId: string, data: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(metasDiarias)
+    .where(and(eq(metasDiarias.userId, userId), eq(metasDiarias.data, data)))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getMetasDiariasByUserIdAndMonth(userId: string, year: number, month: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+  const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
+  
+  return await db.select().from(metasDiarias)
+    .where(
+      and(
+        eq(metasDiarias.userId, userId),
+        between(metasDiarias.data, startDate, endDate)
+      )
+    );
+}

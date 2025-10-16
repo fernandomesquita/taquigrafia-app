@@ -18,4 +18,35 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Tabela de quartos (trabalhos de taquigrafia)
+ * Cada quarto tem 4 minutos de duração
+ */
+export const quartos = mysqlTable("quartos", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: varchar("userId", { length: 64 }).notNull(),
+  quantidade: varchar("quantidade", { length: 10 }).notNull(), // quantidade de quartos registrados (ex: "1", "2", "0.5")
+  dataRegistro: timestamp("dataRegistro").notNull().defaultNow(), // data e hora do registro
+  observacao: text("observacao"), // observações opcionais
+  createdAt: timestamp("createdAt").defaultNow(),
+});
+
+export type Quarto = typeof quartos.$inferSelect;
+export type InsertQuarto = typeof quartos.$inferInsert;
+
+/**
+ * Tabela de metas diárias
+ * Permite ajustar a meta de quartos por dia (padrão: 5 quartos = 20 minutos)
+ */
+export const metasDiarias = mysqlTable("metasDiarias", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: varchar("userId", { length: 64 }).notNull(),
+  data: varchar("data", { length: 10 }).notNull(), // formato YYYY-MM-DD
+  metaQuartos: varchar("metaQuartos", { length: 10 }).notNull(), // meta de quartos para o dia (padrão: "5")
+  motivo: text("motivo"), // motivo da alteração (licença médica, falha de sistema, etc)
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow(),
+});
+
+export type MetaDiaria = typeof metasDiarias.$inferSelect;
+export type InsertMetaDiaria = typeof metasDiarias.$inferInsert;
