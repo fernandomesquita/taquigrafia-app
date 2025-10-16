@@ -77,6 +77,16 @@ export const appRouter = router({
         await db.deleteQuarto(input.id, ctx.user.id);
         return { success: true };
       }),
+
+    updateRevisado: protectedProcedure
+      .input(z.object({ 
+        id: z.string(),
+        revisado: z.boolean(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateQuartoRevisado(input.id, ctx.user.id, input.revisado);
+        return { success: true };
+      }),
   }),
 
   metas: router({

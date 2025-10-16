@@ -1,4 +1,4 @@
-import { mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -31,6 +31,7 @@ export const quartos = mysqlTable("quartos", {
   numeroQuarto: varchar("numeroQuarto", { length: 5 }).notNull(), // número do quarto (ex: "8")
   dataRegistro: timestamp("dataRegistro").notNull().defaultNow(), // data e hora do registro
   observacao: text("observacao"), // observações opcionais
+  revisado: boolean("revisado").default(false).notNull(), // indica se o quarto foi revisado
   createdAt: timestamp("createdAt").defaultNow(),
 });
 

@@ -56,6 +56,15 @@ export default function Dashboard() {
     },
   });
 
+  const updateRevisado = trpc.quartos.updateRevisado.useMutation({
+    onSuccess: () => {
+      utils.quartos.listByMonth.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`Erro ao atualizar status: ${error.message}`);
+    },
+  });
+
   const exportarPDF = trpc.relatorios.exportarPDF.useMutation({
     onSuccess: (data) => {
       // Converter base64 para blob e fazer download
@@ -230,7 +239,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <AjustarMeta
-                  data={`${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
+                  dataInicial={`${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
                 />
               </div>
             </div>
@@ -337,20 +346,35 @@ export default function Dashboard() {
                           className="bg-gray-50 rounded-lg p-3 mb-2 flex items-start justify-between"
                         >
                           <div className="flex-1">
-                            <p className="font-medium">
-                              {quarto.codigoQuarto}
-                              <span className="text-muted-foreground text-sm ml-2">
-                                (4 min)
-                              </span>
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">
+                                {quarto.codigoQuarto}
+                                <span className="text-muted-foreground text-sm ml-2">
+                                  (4 min)
+                                </span>
+                              </p>
+                            </div>
                             {quarto.observacao && (
                               <p className="text-sm text-muted-foreground mt-1">
                                 {quarto.observacao}
                               </p>
                             )}
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(quarto.dataRegistro).toLocaleTimeString("pt-BR")}
-                            </p>
+                            <div className="flex items-center gap-4 mt-2">
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(quarto.dataRegistro).toLocaleTimeString("pt-BR")}
+                              </p>
+                              <label className="flex items-center gap-1 text-xs cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={quarto.revisado}
+                                  onChange={(e) => updateRevisado.mutate({ id: quarto.id, revisado: e.target.checked })}
+                                  className="cursor-pointer"
+                                />
+                                <span className={quarto.revisado ? "text-green-600 font-medium" : "text-muted-foreground"}>
+                                  REVISADO
+                                </span>
+                              </label>
+                            </div>
                           </div>
                           <Button
                             variant="ghost"

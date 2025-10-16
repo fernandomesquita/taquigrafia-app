@@ -112,6 +112,9 @@ export function generatePDF(data: PDFData): Buffer {
       });
       
       let texto = `  • ${hora} - ${quarto.codigoQuarto}`;
+      if (quarto.revisado) {
+        texto += " [REVISADO]";
+      }
       if (quarto.observacao) {
         texto += ` - ${quarto.observacao}`;
       }

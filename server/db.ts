@@ -123,20 +123,35 @@ export async function deleteQuarto(id: string, userId: string) {
   await db.delete(quartos).where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
 }
 
+export async function updateQuartoRevisado(id: string, userId: string, revisado: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(quartos)
+    .set({ revisado })
+    .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
+}
+
 // ========== METAS DIÁRIAS ==========
 
 export async function upsertMetaDiaria(meta: InsertMetaDiaria) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  await db.insert(metasDiarias).values(meta).onDuplicateKeyUpdate({
-    set: {
-      metaQuartos: meta.metaQuartos,
-      motivo: meta.motivo,
-      updatedAt: new Date(),
-    },
-  });
-  return meta;
+  try {
+    console.log('[DB] Upsert meta diária:', meta);
+    await db.insert(metasDiarias).values(meta).onDuplicateKeyUpdate({
+      set: {
+        metaQuartos: meta.metaQuartos,
+        motivo: meta.motivo,
+        updatedAt: new Date(),
+      },
+    });
+    return meta;
+  } catch (error) {
+    console.error('[DB] Erro ao upsert meta diária:', error);
+    throw error;
+  }
 }
 
 export async function getMetaDiariaByUserIdAndDate(userId: string, data: string) {

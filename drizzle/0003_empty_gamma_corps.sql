@@ -1,0 +1,1 @@
+ALTER TABLE `quartos` ADD `revisado` boolean DEFAULT false NOT NULL;
