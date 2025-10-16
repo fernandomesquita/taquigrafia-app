@@ -89,7 +89,7 @@ export default function Dashboard() {
   });
 
   // Cálculos
-  const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, quartosAgrupados } = useMemo(() => {
+  const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, diasUteisRestantes, mediaNecessaria, quartosAgrupados } = useMemo(() => {
     const total = quartos.length; // cada registro = 1 quarto
     const minutos = total * 4;
 
@@ -114,6 +114,35 @@ export default function Dashboard() {
 
     const saldo = total - metaMensal;
 
+    // Calcular dias úteis restantes no mês
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const anoAtual = hoje.getFullYear();
+    let diasUteisRestantes = 0;
+    
+    if (selectedMonth === mesAtual && selectedYear === anoAtual) {
+      const diaHoje = hoje.getDate();
+      for (let dia = diaHoje; dia <= diasNoMes; dia++) {
+        const data = new Date(selectedYear, selectedMonth - 1, dia);
+        const diaSemana = data.getDay();
+        if (diaSemana >= 1 && diaSemana <= 5) {
+          diasUteisRestantes++;
+        }
+      }
+    } else {
+      // Se for mês futuro, todos os dias úteis estão disponíveis
+      // Se for mês passado, não há dias restantes
+      const dataComparacao = new Date(selectedYear, selectedMonth - 1, 1);
+      const dataAtual = new Date(anoAtual, mesAtual - 1, 1);
+      if (dataComparacao > dataAtual) {
+        diasUteisRestantes = diasUteis;
+      }
+    }
+
+    // Calcular média necessária por dia
+    const quartosRestantes = metaMensal - total;
+    const mediaNecessaria = diasUteisRestantes > 0 ? quartosRestantes / diasUteisRestantes : 0;
+
     // Agrupar quartos por data
     const agrupados = quartos.reduce((acc, quarto) => {
       const data = new Date(quarto.dataRegistro).toLocaleDateString("pt-BR");
@@ -130,6 +159,8 @@ export default function Dashboard() {
       metaMensal,
       saldo,
       diasUteis,
+      diasUteisRestantes,
+      mediaNecessaria,
       quartosAgrupados: agrupados,
     };
   }, [quartos, metas, selectedMonth, selectedYear]);
@@ -247,7 +278,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Resumo do Mês */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Total de Quartos</CardDescription>
@@ -272,6 +303,23 @@ export default function Dashboard() {
               <CardTitle className={`text-3xl ${saldo >= 0 ? "text-green-600" : "text-red-600"}`}>
                 {saldo >= 0 ? "+" : ""}
                 {saldo.toFixed(1)}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card className="border-blue-500">
+            <CardHeader className="pb-3">
+              <CardDescription>
+                Média Necessária/Dia
+                {diasUteisRestantes > 0 && (
+                  <span className="text-xs block mt-1">({diasUteisRestantes} dias úteis restantes)</span>
+                )}
+              </CardDescription>
+              <CardTitle className={`text-3xl ${
+                mediaNecessaria <= 5 ? "text-green-600" : 
+                mediaNecessaria <= 7 ? "text-yellow-600" : 
+                "text-red-600"
+              }`}>
+                {diasUteisRestantes > 0 ? mediaNecessaria.toFixed(1) : "--"}
               </CardTitle>
             </CardHeader>
           </Card>
