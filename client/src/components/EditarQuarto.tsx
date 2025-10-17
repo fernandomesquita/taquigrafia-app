@@ -97,10 +97,10 @@ export function EditarQuarto({ quarto }: EditarQuartoProps) {
               onChange={(e) => setDificuldade(e.target.value as any)}
               className="w-full border rounded-md px-3 py-2"
             >
-              <option value="NA">NA</option>
-              <option value="Facil">Fácil</option>
-              <option value="Medio">Médio</option>
-              <option value="Dificil">Difícil</option>
+              <option value="NA">🔘 NA</option>
+              <option value="Facil">🟢 Fácil</option>
+              <option value="Medio">🟡 Médio</option>
+              <option value="Dificil">🔴 Difícil</option>
             </select>
           </div>
           <div className="flex gap-2 justify-end">

@@ -608,10 +608,10 @@ export default function Dashboard() {
                                   onChange={(e) => updateDificuldade.mutate({ id: quarto.id, dificuldade: e.target.value as any })}
                                   className="text-xs border rounded px-2 py-1 cursor-pointer"
                                 >
-                                  <option value="NA">NA</option>
-                                  <option value="Facil">Fácil</option>
-                                  <option value="Medio">Médio</option>
-                                  <option value="Dificil">Difícil</option>
+                                  <option value="NA">🔘 NA</option>
+                                  <option value="Facil">🟢 Fácil</option>
+                                  <option value="Medio">🟡 Médio</option>
+                                  <option value="Dificil">🔴 Difícil</option>
                                 </select>
                               </div>
                             </div>

@@ -218,25 +218,25 @@ export default function Relatorio() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardDescription>NA</CardDescription>
+                    <CardDescription>🔘 NA</CardDescription>
                     <CardTitle className="text-2xl">{estatisticasDificuldade.NA}</CardTitle>
                   </CardHeader>
                 </Card>
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardDescription>Fácil</CardDescription>
+                    <CardDescription>🟢 Fácil</CardDescription>
                     <CardTitle className="text-2xl text-green-600">{estatisticasDificuldade.Facil}</CardTitle>
                   </CardHeader>
                 </Card>
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardDescription>Médio</CardDescription>
+                    <CardDescription>🟡 Médio</CardDescription>
                     <CardTitle className="text-2xl text-yellow-600">{estatisticasDificuldade.Medio}</CardTitle>
                   </CardHeader>
                 </Card>
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardDescription>Difícil</CardDescription>
+                    <CardDescription>🔴 Difícil</CardDescription>
                     <CardTitle className="text-2xl text-red-600">{estatisticasDificuldade.Dificil}</CardTitle>
                   </CardHeader>
                 </Card>
@@ -285,9 +285,9 @@ export default function Relatorio() {
                                   quarto.dificuldade === "Medio" ? "bg-yellow-200 text-yellow-800" :
                                   "bg-red-200 text-red-800"
                                 }`}>
-                                  {quarto.dificuldade === "Facil" ? "Fácil" : 
-                                   quarto.dificuldade === "Medio" ? "Médio" :
-                                   quarto.dificuldade === "Dificil" ? "Difícil" : "NA"}
+                                  {quarto.dificuldade === "Facil" ? "🟢 Fácil" : 
+                                   quarto.dificuldade === "Medio" ? "🟡 Médio" :
+                                   quarto.dificuldade === "Dificil" ? "🔴 Difícil" : "🔘 NA"}
                                 </span>
                               </div>
                             </div>
