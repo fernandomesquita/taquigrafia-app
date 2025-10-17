@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { BarChart3, CalendarIcon, Download, Eye, LogOut, Plus, Trash2 } from "lucide-react";
+import { BarChart3, CalendarIcon, Download, Eye, LogOut, Plus, Trash2, TrendingUp } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { AjustarMeta } from "@/components/AjustarMeta";
 import { EditarQuarto } from "@/components/EditarQuarto";
 import { useMemo, useState } from "react";
@@ -96,7 +97,7 @@ export default function Dashboard() {
   });
 
   // Cálculos
-  const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, diasUteisRestantes, mediaNecessaria, quartosAgrupados } = useMemo(() => {
+  const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, diasUteisRestantes, mediaNecessaria, quartosAgrupados, trabalhoHoje, dadosGrafico } = useMemo(() => {
     const total = quartos.length; // cada registro = 1 quarto
     const minutos = total * 4;
 
@@ -122,13 +123,13 @@ export default function Dashboard() {
     const saldo = total - metaMensal;
 
     // Calcular dias úteis restantes no mês
-    const hoje = new Date();
-    const mesAtual = hoje.getMonth() + 1;
-    const anoAtual = hoje.getFullYear();
+    const hojeData = new Date();
+    const mesAtualCalc = hojeData.getMonth() + 1;
+    const anoAtualCalc = hojeData.getFullYear();
     let diasUteisRestantes = 0;
     
-    if (selectedMonth === mesAtual && selectedYear === anoAtual) {
-      const diaHoje = hoje.getDate();
+    if (selectedMonth === mesAtualCalc && selectedYear === anoAtualCalc) {
+      const diaHoje = hojeData.getDate();
       for (let dia = diaHoje; dia <= diasNoMes; dia++) {
         const data = new Date(selectedYear, selectedMonth - 1, dia);
         const diaSemana = data.getDay();
@@ -140,7 +141,7 @@ export default function Dashboard() {
       // Se for mês futuro, todos os dias úteis estão disponíveis
       // Se for mês passado, não há dias restantes
       const dataComparacao = new Date(selectedYear, selectedMonth - 1, 1);
-      const dataAtual = new Date(anoAtual, mesAtual - 1, 1);
+      const dataAtual = new Date(anoAtualCalc, mesAtualCalc - 1, 1);
       if (dataComparacao > dataAtual) {
         diasUteisRestantes = diasUteis;
       }
@@ -160,6 +161,71 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, typeof quartos>);
 
+    // Calcular trabalho de hoje
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const anoAtual = hoje.getFullYear();
+    const diaHoje = hoje.getDate();
+    const diaSemanaHoje = hoje.getDay();
+    
+    let trabalhoHoje = {
+      metaDia: 0,
+      realizados: 0,
+      faltam: 0,
+      isDiaUtil: false
+    };
+    
+    if (selectedMonth === mesAtual && selectedYear === anoAtual) {
+      // Verificar se hoje é dia útil (seg-sex)
+      trabalhoHoje.isDiaUtil = diaSemanaHoje >= 1 && diaSemanaHoje <= 5;
+      
+      if (trabalhoHoje.isDiaUtil) {
+        // Meta padrão é 5, mas pode ter ajuste
+        trabalhoHoje.metaDia = 5;
+        const dataHoje = `${anoAtual}-${String(mesAtual).padStart(2, '0')}-${String(diaHoje).padStart(2, '0')}`;
+        const metaAjustada = metas.find(m => m.data === dataHoje);
+        if (metaAjustada) {
+          trabalhoHoje.metaDia = parseFloat(metaAjustada.metaQuartos);
+        }
+        
+        // Contar quartos realizados hoje
+        const dataHojeStr = hoje.toLocaleDateString("pt-BR");
+        trabalhoHoje.realizados = agrupados[dataHojeStr]?.length || 0;
+        trabalhoHoje.faltam = Math.max(0, trabalhoHoje.metaDia - trabalhoHoje.realizados);
+      }
+    }
+
+    // Preparar dados para o gráfico de produção diária
+    const dadosGrafico = [];
+    
+    for (let dia = 1; dia <= diasNoMes; dia++) {
+      const data = new Date(selectedYear, selectedMonth - 1, dia);
+      const diaSemana = data.getDay();
+      const isDiaUtil = diaSemana >= 1 && diaSemana <= 5;
+      
+      // Formatar data para buscar no agrupamento
+      const dataStr = data.toLocaleDateString("pt-BR");
+      const quartosNoDia = agrupados[dataStr]?.length || 0;
+      
+      // Meta do dia (5 para dias úteis, 0 para finais de semana)
+      let metaDia = isDiaUtil ? 5 : 0;
+      
+      // Verificar se há ajuste de meta para este dia
+      const dataISO = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+      const metaAjustada = metas.find(m => m.data === dataISO);
+      if (metaAjustada) {
+        metaDia = parseFloat(metaAjustada.metaQuartos);
+      }
+      
+      dadosGrafico.push({
+        dia: dia,
+        diaNome: `${dia}/${selectedMonth}`,
+        realizados: quartosNoDia,
+        meta: metaDia,
+        isDiaUtil
+      });
+    }
+
     return {
       totalQuartos: total,
       totalMinutos: minutos,
@@ -169,6 +235,8 @@ export default function Dashboard() {
       diasUteisRestantes,
       mediaNecessaria,
       quartosAgrupados: agrupados,
+      trabalhoHoje,
+      dadosGrafico,
     };
   }, [quartos, metas, selectedMonth, selectedYear]);
 
@@ -288,6 +356,43 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
+        {/* Trabalho de Hoje */}
+        {trabalhoHoje.isDiaUtil && (
+          <Card className="mb-6 border-purple-500">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5" />
+                Trabalho de Hoje
+              </CardTitle>
+              <CardDescription>
+                {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Meta do Dia</p>
+                  <p className="text-2xl font-bold">{trabalhoHoje.metaDia}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Realizados</p>
+                  <p className="text-2xl font-bold text-blue-600">{trabalhoHoje.realizados}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Faltam</p>
+                  <p className={`text-2xl font-bold ${
+                    trabalhoHoje.faltam === 0 ? "text-green-600" : 
+                    trabalhoHoje.faltam <= 2 ? "text-yellow-600" : 
+                    "text-red-600"
+                  }`}>
+                    {trabalhoHoje.faltam}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Resumo do Mês */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <Card>
@@ -335,6 +440,69 @@ export default function Dashboard() {
             </CardHeader>
           </Card>
         </div>
+
+        {/* Gráfico de Produção Diária */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Produção Diária do Mês
+            </CardTitle>
+            <CardDescription>
+              Acompanhe sua produção diária em comparação com a meta
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={dadosGrafico}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="diaNome" 
+                  tick={{ fontSize: 12 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 border rounded shadow-lg">
+                          <p className="font-semibold">{data.diaNome}</p>
+                          <p className="text-sm text-blue-600">Realizados: {data.realizados}</p>
+                          <p className="text-sm text-green-600">Meta: {data.meta}</p>
+                          {!data.isDiaUtil && (
+                            <p className="text-xs text-gray-500 mt-1">Final de semana</p>
+                          )}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="realizados" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  name="Realizados"
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="meta" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  name="Meta"
+                  dot={{ r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Formulário de Registro */}
@@ -398,7 +566,7 @@ export default function Dashboard() {
                 <div className="space-y-4 max-h-96 overflow-y-auto">
                   {Object.entries(quartosAgrupados).map(([data, quartosData]) => (
                     <div key={data} className="border-l-4 border-blue-500 pl-4">
-                      <p className="font-semibold text-sm text-gray-700 mb-2">{data}</p>
+                      <p className="font-bold text-lg text-gray-800 mb-3 border-b pb-2">{data}</p>
                       {quartosData.map((quarto) => (
                         <div
                           key={quarto.id}
