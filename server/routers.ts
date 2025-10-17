@@ -87,6 +87,42 @@ export const appRouter = router({
         await db.updateQuartoRevisado(input.id, ctx.user.id, input.revisado);
         return { success: true };
       }),
+
+    updateDificuldade: protectedProcedure
+      .input(z.object({ 
+        id: z.string(),
+        dificuldade: z.enum(["NA", "Facil", "Medio", "Dificil"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateQuartoDificuldade(input.id, ctx.user.id, input.dificuldade);
+        return { success: true };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.string(),
+        codigoQuarto: z.string(),
+        observacao: z.string().optional(),
+        dificuldade: z.enum(["NA", "Facil", "Medio", "Dificil"]).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Validar formato sessão-quarto
+        const match = input.codigoQuarto.match(/^(\d+)-(\d+)$/);
+        if (!match) {
+          throw new Error(`Código inválido: ${input.codigoQuarto}. Use o formato SESSÃO-QUARTO (ex: 79777-8)`);
+        }
+        
+        const [_, sessao, numeroQuarto] = match;
+        
+        await db.updateQuarto(input.id, ctx.user.id, {
+          codigoQuarto: input.codigoQuarto,
+          sessao,
+          numeroQuarto,
+          observacao: input.observacao,
+          dificuldade: input.dificuldade,
+        });
+        return { success: true };
+      }),
   }),
 
   metas: router({

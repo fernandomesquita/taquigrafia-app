@@ -132,6 +132,30 @@ export async function updateQuartoRevisado(id: string, userId: string, revisado:
     .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
 }
 
+export async function updateQuartoDificuldade(id: string, userId: string, dificuldade: "NA" | "Facil" | "Medio" | "Dificil") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(quartos)
+    .set({ dificuldade })
+    .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
+}
+
+export async function updateQuarto(id: string, userId: string, updates: {
+  codigoQuarto?: string;
+  sessao?: string;
+  numeroQuarto?: string;
+  observacao?: string;
+  dificuldade?: "NA" | "Facil" | "Medio" | "Dificil";
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(quartos)
+    .set(updates)
+    .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
+}
+
 // ========== METAS DIÁRIAS ==========
 
 export async function upsertMetaDiaria(meta: InsertMetaDiaria) {

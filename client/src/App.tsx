@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Consolidado from "./pages/Consolidado";
+import Relatorio from "./pages/Relatorio";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -15,6 +16,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/consolidado" component={Consolidado} />
+      <Route path="/relatorio" component={Relatorio} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

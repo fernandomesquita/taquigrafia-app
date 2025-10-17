@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { BarChart3, CalendarIcon, Download, LogOut, Plus, Trash2 } from "lucide-react";
+import { BarChart3, CalendarIcon, Download, Eye, LogOut, Plus, Trash2 } from "lucide-react";
 import { AjustarMeta } from "@/components/AjustarMeta";
+import { EditarQuarto } from "@/components/EditarQuarto";
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -62,6 +63,12 @@ export default function Dashboard() {
     },
     onError: (error) => {
       toast.error(`Erro ao atualizar status: ${error.message}`);
+    },
+  });
+
+  const updateDificuldade = trpc.quartos.updateDificuldade.useMutation({
+    onSuccess: () => {
+      utils.quartos.listByMonth.invalidate();
     },
   });
 
@@ -221,10 +228,14 @@ export default function Dashboard() {
 
       <main className="container mx-auto px-4 py-8">
         {/* Botões de Ação */}
-        <div className="mb-6 flex gap-4">
+        <div className="mb-6 flex gap-4 flex-wrap">
           <Button onClick={() => setLocation("/consolidado")}>
             <BarChart3 className="h-4 w-4 mr-2" />
             Visão Consolidada (12 meses)
+          </Button>
+          <Button variant="outline" onClick={() => setLocation("/relatorio")}>
+            <Eye className="h-4 w-4 mr-2" />
+            Visualizar Relatório do Mês
           </Button>
           <Button
             variant="outline"
@@ -407,7 +418,7 @@ export default function Dashboard() {
                                 {quarto.observacao}
                               </p>
                             )}
-                            <div className="flex items-center gap-4 mt-2">
+                            <div className="flex items-center gap-4 mt-2 flex-wrap">
                               <p className="text-xs text-muted-foreground">
                                 {new Date(quarto.dataRegistro).toLocaleTimeString("pt-BR")}
                               </p>
@@ -422,16 +433,32 @@ export default function Dashboard() {
                                   REVISADO
                                 </span>
                               </label>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Dificuldade:</span>
+                                <select
+                                  value={quarto.dificuldade}
+                                  onChange={(e) => updateDificuldade.mutate({ id: quarto.id, dificuldade: e.target.value as any })}
+                                  className="text-xs border rounded px-2 py-1 cursor-pointer"
+                                >
+                                  <option value="NA">NA</option>
+                                  <option value="Facil">Fácil</option>
+                                  <option value="Medio">Médio</option>
+                                  <option value="Dificil">Difícil</option>
+                                </select>
+                              </div>
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteQuarto.mutate({ id: quarto.id })}
-                            disabled={deleteQuarto.isPending}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <EditarQuarto quarto={quarto} />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteQuarto.mutate({ id: quarto.id })}
+                              disabled={deleteQuarto.isPending}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
