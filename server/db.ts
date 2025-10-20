@@ -123,12 +123,17 @@ export async function deleteQuarto(id: string, userId: string) {
   await db.delete(quartos).where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
 }
 
-export async function updateQuartoRevisado(id: string, userId: string, revisado: boolean) {
+export async function updateQuartoRevisado(id: string, userId: string, revisado: boolean, observacoesRevisao?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
+  const updateData: any = { revisado };
+  if (observacoesRevisao !== undefined) {
+    updateData.observacoesRevisao = observacoesRevisao || null;
+  }
+  
   await db.update(quartos)
-    .set({ revisado })
+    .set(updateData)
     .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
 }
 
@@ -204,3 +209,30 @@ export async function getMetasDiariasByUserIdAndMonth(userId: string, year: numb
       )
     );
 }
+
+
+// ========== BACKUP ==========
+
+export async function getAllMetasDiariasByUserId(userId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.select().from(metasDiarias)
+    .where(eq(metasDiarias.userId, userId))
+    .orderBy(desc(metasDiarias.data));
+}
+
+export async function deleteAllQuartosByUserId(userId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(quartos).where(eq(quartos.userId, userId));
+}
+
+export async function deleteAllMetasByUserId(userId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(metasDiarias).where(eq(metasDiarias.userId, userId));
+}
+

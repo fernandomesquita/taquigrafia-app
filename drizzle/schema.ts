@@ -32,6 +32,7 @@ export const quartos = mysqlTable("quartos", {
   dataRegistro: timestamp("dataRegistro").notNull().defaultNow(), // data e hora do registro
   observacao: text("observacao"), // observações opcionais
   revisado: boolean("revisado").default(false).notNull(), // indica se o quarto foi revisado
+  observacoesRevisao: text("observacoesRevisao"), // observações sobre a revisão
   dificuldade: mysqlEnum("dificuldade", ["NA", "Facil", "Medio", "Dificil"]).default("NA").notNull(), // nível de dificuldade do quarto
   createdAt: timestamp("createdAt").defaultNow(),
 });

@@ -1,0 +1,1 @@
+ALTER TABLE `quartos` ADD `observacoesRevisao` text;

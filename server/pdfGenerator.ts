@@ -114,6 +114,9 @@ export function generatePDF(data: PDFData): Buffer {
       let texto = `  • ${hora} - ${quarto.codigoQuarto}`;
       if (quarto.revisado) {
         texto += " [REVISADO]";
+        if (quarto.observacoesRevisao) {
+          texto += ` (${quarto.observacoesRevisao})`;
+        }
       }
       if (quarto.dificuldade && quarto.dificuldade !== "NA") {
         const dificuldadeLabel = quarto.dificuldade === "Facil" ? "Fácil" : 

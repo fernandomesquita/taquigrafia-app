@@ -82,9 +82,10 @@ export const appRouter = router({
       .input(z.object({ 
         id: z.string(),
         revisado: z.boolean(),
+        observacoesRevisao: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        await db.updateQuartoRevisado(input.id, ctx.user.id, input.revisado);
+        await db.updateQuartoRevisado(input.id, ctx.user.id, input.revisado, input.observacoesRevisao);
         return { success: true };
       }),
 
@@ -156,6 +157,143 @@ export const appRouter = router({
       }))
       .query(async ({ ctx, input }) => {
         return await db.getMetasDiariasByUserIdAndMonth(ctx.user.id, input.year, input.month);
+      }),
+  }),
+
+  backup: router({
+    exportarCompleto: protectedProcedure
+      .query(async ({ ctx }) => {
+        // Buscar todos os dados do usuário
+        const quartos = await db.getQuartosByUserId(ctx.user.id);
+        const metas = await db.getAllMetasDiariasByUserId(ctx.user.id);
+
+        // Criar backup com metadados
+        const backup = {
+          version: "1.0",
+          schema_version: "1.0",
+          backup_date: new Date().toISOString(),
+          user: {
+            id: ctx.user.id,
+            name: ctx.user.name || ctx.user.email || "Usuário",
+            email: ctx.user.email,
+          },
+          data: {
+            quartos: quartos.map(q => ({
+              id: q.id,
+              codigoQuarto: q.codigoQuarto,
+              sessao: q.sessao,
+              numeroQuarto: q.numeroQuarto,
+              observacao: q.observacao,
+              dataRegistro: q.dataRegistro,
+              revisado: q.revisado,
+              observacoesRevisao: q.observacoesRevisao,
+              dificuldade: q.dificuldade,
+            })),
+            metas: metas,
+          },
+          stats: {
+            total_quartos: quartos.length,
+            total_revisados: quartos.filter(q => q.revisado).length,
+            total_metas: metas.length,
+          },
+        };
+
+        // Calcular checksum simples
+        const checksumData = JSON.stringify(backup.data);
+        const checksum = Buffer.from(checksumData).toString('base64').substring(0, 32);
+        
+        return {
+          ...backup,
+          checksum,
+        };
+      }),
+
+    importarCompleto: protectedProcedure
+      .input(z.object({
+        backup: z.any(),
+        mode: z.enum(["replace", "merge"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Validar estrutura do backup
+        if (!input.backup.version || !input.backup.data) {
+          throw new Error("Formato de backup inválido");
+        }
+
+        // Validar checksum se existir
+        if (input.backup.checksum) {
+          const checksumData = JSON.stringify(input.backup.data);
+          const expectedChecksum = Buffer.from(checksumData).toString('base64').substring(0, 32);
+          if (expectedChecksum !== input.backup.checksum) {
+            throw new Error("Arquivo corrompido: checksum inválido");
+          }
+        }
+
+        let importedQuartos = 0;
+        let importedMetas = 0;
+        let skippedQuartos = 0;
+
+        // Se modo replace, limpar dados existentes
+        if (input.mode === "replace") {
+          await db.deleteAllQuartosByUserId(ctx.user.id);
+          await db.deleteAllMetasByUserId(ctx.user.id);
+        }
+
+        // Importar quartos
+        const existingQuartos = await db.getQuartosByUserId(ctx.user.id);
+        const existingCodigos = new Set(existingQuartos.map(q => q.codigoQuarto + q.dataRegistro));
+
+        for (const quarto of input.backup.data.quartos) {
+          const key = quarto.codigoQuarto + quarto.dataRegistro;
+          
+          if (input.mode === "merge" && existingCodigos.has(key)) {
+            skippedQuartos++;
+            continue;
+          }
+
+          await db.createQuarto({
+            id: quarto.id || randomUUID(),
+            userId: ctx.user.id,
+            codigoQuarto: quarto.codigoQuarto,
+            sessao: quarto.sessao,
+            numeroQuarto: quarto.numeroQuarto,
+            observacao: quarto.observacao,
+            dataRegistro: new Date(quarto.dataRegistro),
+            revisado: quarto.revisado || false,
+            observacoesRevisao: quarto.observacoesRevisao,
+            dificuldade: quarto.dificuldade || "NA",
+          });
+          importedQuartos++;
+        }
+
+        // Importar metas
+        for (const meta of input.backup.data.metas || []) {
+          await db.upsertMetaDiaria({
+            id: meta.id || `${ctx.user.id}-${meta.data}`,
+            userId: ctx.user.id,
+            data: meta.data,
+            metaQuartos: meta.metaQuartos,
+            motivo: meta.motivo,
+          });
+          importedMetas++;
+        }
+
+        return {
+          success: true,
+          imported: {
+            quartos: importedQuartos,
+            metas: importedMetas,
+          },
+          skipped: {
+            quartos: skippedQuartos,
+          },
+        };
+      }),
+
+    getLastBackupInfo: protectedProcedure
+      .query(async ({ ctx }) => {
+        // Retornar informações sobre último backup (se armazenado)
+        // Por enquanto, retornar null (será implementado com localStorage no frontend)
+        return null;
       }),
   }),
 

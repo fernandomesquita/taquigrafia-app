@@ -8,8 +8,10 @@ import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { BarChart3, CalendarIcon, Download, Eye, LogOut, Plus, Trash2, TrendingUp } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell } from "recharts";
 import { AjustarMeta } from "@/components/AjustarMeta";
 import { EditarQuarto } from "@/components/EditarQuarto";
+import { BackupCard } from "@/components/BackupCard";
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -503,6 +505,9 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {/* Card de Backup e Segurança */}
+        <BackupCard />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Formulário de Registro */}

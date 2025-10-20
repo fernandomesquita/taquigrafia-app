@@ -36,6 +36,13 @@
       "when": 1760699116973,
       "tag": "0004_brown_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1760789927783,
+      "tag": "0005_open_moondragon",
+      "breakpoints": true
     }
   ]
 }
