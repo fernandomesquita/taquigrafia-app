@@ -236,3 +236,57 @@ export async function deleteAllMetasByUserId(userId: string) {
   await db.delete(metasDiarias).where(eq(metasDiarias.userId, userId));
 }
 
+// ========== ARQUIVOS DE COMPARAÇÃO ==========
+
+export async function uploadArquivoTaquigrafia(
+  quartoId: string,
+  userId: string,
+  fileBase64: string,
+  fileName: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(quartos)
+    .set({
+      arquivoTaquigrafia: fileBase64,
+      arquivoTaquigrafiaName: fileName,
+    })
+    .where(and(eq(quartos.id, quartoId), eq(quartos.userId, userId)));
+}
+
+export async function uploadArquivoRedacaoFinal(
+  quartoId: string,
+  userId: string,
+  fileBase64: string,
+  fileName: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(quartos)
+    .set({
+      arquivoRedacaoFinal: fileBase64,
+      arquivoRedacaoFinalName: fileName,
+    })
+    .where(and(eq(quartos.id, quartoId), eq(quartos.userId, userId)));
+}
+
+export async function salvarComparacao(
+  quartoId: string,
+  userId: string,
+  taxaPrecisao: string,
+  totalAlteracoes: number
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(quartos)
+    .set({
+      comparacaoRealizada: true,
+      taxaPrecisao,
+      totalAlteracoes,
+    })
+    .where(and(eq(quartos.id, quartoId), eq(quartos.userId, userId)));
+}
+

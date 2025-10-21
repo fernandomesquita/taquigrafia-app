@@ -8,11 +8,14 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Consolidado from "./pages/Consolidado";
 import Relatorio from "./pages/Relatorio";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path={"/"} component={Home} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/consolidado" component={Consolidado} />

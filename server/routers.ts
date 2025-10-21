@@ -6,20 +6,11 @@ import { z } from "zod";
 import * as db from "./db";
 import { randomUUID } from "crypto";
 import { generatePDF } from "./pdfGenerator";
+import { authRouter } from "./routers/auth";
 
 export const appRouter = router({
   system: systemRouter,
-
-  auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
-    }),
-  }),
+  auth: authRouter,
 
   quartos: router({
     create: protectedProcedure
@@ -124,6 +115,54 @@ export const appRouter = router({
         });
         return { success: true };
       }),
+
+    uploadArquivoTaquigrafia: protectedProcedure
+      .input(z.object({
+        quartoId: z.string(),
+        fileBase64: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.uploadArquivoTaquigrafia(
+          input.quartoId,
+          ctx.user.id,
+          input.fileBase64,
+          input.fileName
+        );
+        return { success: true };
+      }),
+
+    uploadArquivoRedacaoFinal: protectedProcedure
+      .input(z.object({
+        quartoId: z.string(),
+        fileBase64: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.uploadArquivoRedacaoFinal(
+          input.quartoId,
+          ctx.user.id,
+          input.fileBase64,
+          input.fileName
+        );
+        return { success: true };
+      }),
+
+    salvarComparacao: protectedProcedure
+      .input(z.object({
+        quartoId: z.string(),
+        taxaPrecisao: z.string(),
+        totalAlteracoes: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.salvarComparacao(
+          input.quartoId,
+          ctx.user.id,
+          input.taxaPrecisao,
+          input.totalAlteracoes
+        );
+        return { success: true };
+      }),
   }),
 
   metas: router({
@@ -157,6 +196,35 @@ export const appRouter = router({
       }))
       .query(async ({ ctx, input }) => {
         return await db.getMetasDiariasByUserIdAndMonth(ctx.user.id, input.year, input.month);
+      }),
+
+    ajustarLote: protectedProcedure
+      .input(z.object({
+        dataInicio: z.string(), // YYYY-MM-DD
+        dataFim: z.string(), // YYYY-MM-DD
+        metaQuartos: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const inicio = new Date(input.dataInicio + "T00:00:00");
+        const fim = new Date(input.dataFim + "T00:00:00");
+        
+        const metas = [];
+        const currentDate = new Date(inicio);
+        
+        while (currentDate <= fim) {
+          const dataStr = currentDate.toISOString().split('T')[0];
+          const meta = await db.upsertMetaDiaria({
+            id: `${ctx.user.id}-${dataStr}`,
+            userId: ctx.user.id,
+            data: dataStr,
+            metaQuartos: input.metaQuartos,
+            motivo: `Ajuste em lote: ${input.dataInicio} a ${input.dataFim}`,
+          });
+          metas.push(meta);
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        return { success: true, count: metas.length };
       }),
   }),
 

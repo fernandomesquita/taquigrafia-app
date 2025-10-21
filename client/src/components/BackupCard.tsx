@@ -15,13 +15,18 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export function BackupCard() {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showExportInstructions, setShowExportInstructions] = useState(false);
   const [importMode, setImportMode] = useState<"replace" | "merge">("merge");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [backupPreview, setBackupPreview] = useState<any>(null);
+  const [lastBackupTimestamp, setLastBackupTimestamp] = useState<string | null>(
+    localStorage.getItem("lastBackupDate")
+  );
 
   const utils = trpc.useUtils();
 
@@ -47,9 +52,8 @@ export function BackupCard() {
   });
 
   // Verificar último backup no localStorage
-  const lastBackupDate = localStorage.getItem("lastBackupDate");
-  const daysSinceBackup = lastBackupDate
-    ? Math.floor((Date.now() - new Date(lastBackupDate).getTime()) / (1000 * 60 * 60 * 24))
+  const daysSinceBackup = lastBackupTimestamp
+    ? Math.floor((Date.now() - new Date(lastBackupTimestamp).getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
   const handleExportBackup = async () => {
@@ -58,7 +62,9 @@ export function BackupCard() {
     
     if (result.data) {
       // Salvar data do último backup
-      localStorage.setItem("lastBackupDate", new Date().toISOString());
+      const now = new Date().toISOString();
+      localStorage.setItem("lastBackupDate", now);
+      setLastBackupTimestamp(now);
       
       // Baixar JSON
       const json = JSON.stringify(result.data, null, 2);
@@ -127,20 +133,33 @@ export function BackupCard() {
       <Card className="col-span-full">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <CardTitle className="flex items-center gap-2">
                 <Database className="h-5 w-5" />
                 Backup e Segurança
               </CardTitle>
               <CardDescription>
-                Proteja seus dados com backups regulares
+                <span className={`font-medium ${getBackupStatusColor()}`}>
+                  {getBackupStatusText()}
+                </span>
               </CardDescription>
             </div>
-            <div className={`text-sm font-medium ${getBackupStatusColor()}`}>
-              {getBackupStatusText()}
+            <div className="flex items-center gap-2">
+              <Button onClick={handleExportBackup} size="sm">
+                <Download className="mr-2 h-4 w-4" />
+                Fazer Backup Agora
+              </Button>
+              <Button 
+                onClick={() => setIsExpanded(!isExpanded)} 
+                variant="ghost" 
+                size="sm"
+              >
+                {isExpanded ? "Ocultar Detalhes" : "Ver Detalhes"}
+              </Button>
             </div>
           </div>
         </CardHeader>
+        {isExpanded && (
         <CardContent className="space-y-4">
           {shouldShowReminder && (
             <Alert variant={daysSinceBackup && daysSinceBackup >= 14 ? "destructive" : "default"}>
@@ -199,6 +218,7 @@ export function BackupCard() {
             </AlertDescription>
           </Alert>
         </CardContent>
+        )}
       </Card>
 
       {/* Dialog de Instruções de Exportação */}

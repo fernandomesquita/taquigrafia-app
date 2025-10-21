@@ -1,10 +1,10 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
+import { APP_LOGO, APP_TITLE } from "@/const";
 import { BarChart3, Calendar, FileText, TrendingUp } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
@@ -33,7 +33,7 @@ export default function Home() {
             {APP_LOGO && <img src={APP_LOGO} alt="Logo" className="h-8" />}
             <h1 className="text-2xl font-bold text-gray-900">{APP_TITLE}</h1>
           </div>
-          <Button onClick={() => (window.location.href = getLoginUrl())}>
+          <Button onClick={() => setLocation("/login")}>
             Fazer Login
           </Button>
         </div>
@@ -51,7 +51,7 @@ export default function Home() {
           <div className="mt-8">
             <Button
               size="lg"
-              onClick={() => (window.location.href = getLoginUrl())}
+              onClick={() => setLocation("/login")}
               className="text-lg px-8 py-6"
             >
               Começar Agora

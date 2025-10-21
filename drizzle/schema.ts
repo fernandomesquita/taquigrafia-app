@@ -1,4 +1,4 @@
-import { boolean, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -8,8 +8,9 @@ import { boolean, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzl
 export const users = mysqlTable("users", {
   id: varchar("id", { length: 64 }).primaryKey(),
   name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  password: varchar("password", { length: 255 }), // hash da senha (bcrypt)
+  loginMethod: varchar("loginMethod", { length: 64 }).default("local"),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow(),
@@ -34,6 +35,14 @@ export const quartos = mysqlTable("quartos", {
   revisado: boolean("revisado").default(false).notNull(), // indica se o quarto foi revisado
   observacoesRevisao: text("observacoesRevisao"), // observações sobre a revisão
   dificuldade: mysqlEnum("dificuldade", ["NA", "Facil", "Medio", "Dificil"]).default("NA").notNull(), // nível de dificuldade do quarto
+  // Arquivos de comparação
+  arquivoTaquigrafia: text("arquivoTaquigrafia"), // arquivo Word com taquigrafia original (base64)
+  arquivoTaquigrafiaName: varchar("arquivoTaquigrafiaName", { length: 255 }), // nome do arquivo original
+  arquivoRedacaoFinal: text("arquivoRedacaoFinal"), // arquivo Word com redação final (base64)
+  arquivoRedacaoFinalName: varchar("arquivoRedacaoFinalName", { length: 255 }), // nome do arquivo final
+  comparacaoRealizada: boolean("comparacaoRealizada").default(false).notNull(), // indica se a comparação foi feita
+  taxaPrecisao: varchar("taxaPrecisao", { length: 10 }), // taxa de precisão da taquigrafia (%)
+  totalAlteracoes: int("totalAlteracoes").default(0), // número total de alterações
   createdAt: timestamp("createdAt").defaultNow(),
 });
 
