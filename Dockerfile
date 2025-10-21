@@ -14,7 +14,6 @@ COPY . .
 RUN pnpm run build
 
 ENV NODE_ENV=production
-ENV NODE_PATH=/app/node_modules
 EXPOSE 3000
 
-CMD ["node", "--experimental-specifier-resolution=node", "dist/index.js"]
+CMD ["node", "dist/index.cjs"]
