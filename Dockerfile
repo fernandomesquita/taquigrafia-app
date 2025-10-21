@@ -2,24 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Instalar pnpm
 RUN npm install -g pnpm@10.4.1
 
-# Copiar arquivos de dependências
 COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
 
-# Instalar dependências
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --prod=false
 
-# Copiar código fonte
 COPY . .
 
-# Build
 RUN pnpm run build
 
-# Expor porta
-EXPOSE 3000
+ENV NODE_ENV=production
 
-# Comando de start
-CMD ["pnpm", "start"]
+CMD ["node", "--experimental-modules", "dist/index.js"]
