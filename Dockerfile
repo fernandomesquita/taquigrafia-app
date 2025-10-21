@@ -1,25 +1,43 @@
-FROM node:20-slim
+FROM node:20-alpine AS base
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
+
+FROM base AS dependencies
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+FROM base AS build
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY . .
+
+# Build
+RUN pnpm run build
+
+FROM base AS production
 
 WORKDIR /app
 
-# Instalar pnpm
-RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
 
-# Copiar package files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
-COPY patches patches
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Copy built files
+COPY --from=build /app/dist ./dist
 
-# Copy source
-COPY . .
-
-# Build frontend
-RUN pnpm exec vite build
-
-# Set env
 ENV NODE_ENV=production
+EXPOSE 3000
 
-# Start with tsx
-CMD ["pnpm", "exec", "tsx", "server/_core/index.ts"]
+CMD ["node", "dist/index.js"]
