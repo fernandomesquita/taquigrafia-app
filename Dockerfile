@@ -1,21 +1,25 @@
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
-RUN npm install -g pnpm@10.4.1
+# Instalar pnpm
+RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 
-COPY package.json pnpm-lock.yaml ./
-COPY patches ./patches
+# Copiar package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* ./
+COPY patches patches
 
-# Instalar TODAS as dependências (incluindo devDependencies para ter tsx)
+# Install dependencies
 RUN pnpm install --frozen-lockfile
 
+# Copy source
 COPY . .
 
-# Build apenas do frontend (Vite)
+# Build frontend
 RUN pnpm exec vite build
 
+# Set env
 ENV NODE_ENV=production
 
-# Executar backend com tsx (sem build do esbuild)
+# Start with tsx
 CMD ["pnpm", "exec", "tsx", "server/_core/index.ts"]
