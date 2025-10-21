@@ -4,18 +4,22 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@10.4.1 --activate
 
+# Configure pnpm to not use symlinks
+RUN pnpm config set node-linker hoisted
+
 COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
 
-RUN pnpm install --frozen-lockfile
+# Install with hoisted node-linker
+RUN pnpm install --frozen-lockfile --shamefully-hoist
 
 COPY . .
 
-# Build apenas o frontend (Vite)
+# Build frontend only
 RUN pnpm exec vite build
 
 ENV NODE_ENV=production
 EXPOSE 3000
 
-# Executar backend com tsx (sem build)
-CMD ["pnpm", "start"]
+# Run with tsx
+CMD ["pnpm", "exec", "tsx", "server/_core/index.ts"]
