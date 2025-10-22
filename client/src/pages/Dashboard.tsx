@@ -20,7 +20,7 @@ import { PieChart, Pie, Cell } from "recharts";
 import { AjustarMeta } from "@/components/AjustarMeta";
 import { AjustarMetaLote } from "@/components/AjustarMetaLote";
 import { EditarQuarto } from "@/components/EditarQuarto";
-import { BackupCard } from "@/components/BackupCard";
+import { LayoutComAbas } from "@/components/LayoutComAbas";
 import { ComparacaoDocumentos } from "@/components/ComparacaoDocumentos";
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
@@ -312,44 +312,18 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Header */}
-      <header className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {APP_LOGO && <img src={APP_LOGO} alt="Logo" className="h-8" />}
-            <h1 className="text-2xl font-bold text-gray-900">{APP_TITLE}</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.name || user?.email}</span>
-            <Button variant="outline" size="sm" onClick={() => logout()}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        {/* Botões de Ação */}
-        <div className="mb-6 flex gap-4 flex-wrap">
-          <Button onClick={() => setLocation("/consolidado")}>
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Visão Consolidada (12 meses)
-          </Button>
-          <Button variant="outline" onClick={() => setLocation("/relatorio")}>
-            <Eye className="h-4 w-4 mr-2" />
-            Visualizar Relatório do Mês
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => exportarPDF.mutate({ year: selectedYear, month: selectedMonth })}
-            disabled={exportarPDF.isPending}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            {exportarPDF.isPending ? "Gerando PDF..." : "Exportar PDF do Mês"}
-          </Button>
-        </div>
+    <LayoutComAbas>
+      {/* Botões de Ação */}
+      <div className="mb-6 flex gap-4 flex-wrap">
+        <Button
+          variant="outline"
+          onClick={() => exportarPDF.mutate({ year: selectedYear, month: selectedMonth })}
+          disabled={exportarPDF.isPending}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          {exportarPDF.isPending ? "Gerando PDF..." : "Exportar PDF do Mês"}
+        </Button>
+      </div>
 
         {/* Formulário de Registro + Dias Restantes */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -636,11 +610,6 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-
-        {/* Card de Backup e Segurança */}
-        <div className="mb-6">
-          <BackupCard />
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -960,20 +929,7 @@ export default function Dashboard() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </main>
-
-      {/* Rodapé */}
-      <footer className="bg-white border-t mt-12 py-6">
-        <div className="container mx-auto px-4 text-center text-sm text-gray-600">
-          <p className="mb-1">
-            <span className="font-semibold">Versão 2.1.0</span>
-          </p>
-          <p>
-            Desenvolvido por <span className="font-semibold text-blue-600">Fernando Mesquita</span>
-          </p>
-        </div>
-      </footer>
-    </div>
+    </LayoutComAbas>
   );
 }
 

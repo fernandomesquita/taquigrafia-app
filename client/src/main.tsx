@@ -6,6 +6,10 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import "./index.css";
+import { APP_TITLE } from "@/const";
+
+// Atualizar título da página
+document.title = APP_TITLE;
 
 const queryClient = new QueryClient();
 

@@ -1,14 +1,17 @@
-// Arquivo completo corrigido: client/src/components/ComparacaoDocumentos.tsx
-// Copie todo este conteúdo para substituir o arquivo existente
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { FileText, Upload, Eye, Download } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { FileText, Upload, Download } from "lucide-react";
+import { toast } from "sonner";
 import mammoth from "mammoth";
 import * as Diff from "diff";
 import { APP_TITLE } from "@/const";
@@ -23,67 +26,93 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
   const [showDialog, setShowDialog] = useState(false);
   const [showComparacao, setShowComparacao] = useState(mostrarApenasResultado && quarto.comparacaoRealizada);
   const [uploading, setUploading] = useState(false);
-  const [textoOriginal, setTextoOriginal] = useState("");
-  const [textoRevisado, setTextoRevisado] = useState("");
+  const [comparing, setComparing] = useState(false);
   const [resultadoComparacao, setResultadoComparacao] = useState<any>(null);
 
   const utils = trpc.useUtils();
-  const salvarComparacao = trpc.quartos.salvarComparacao.useMutation({
+
+  const uploadTaquigrafia = trpc.quartos.uploadArquivoTaquigrafia.useMutation({
     onSuccess: () => {
-      utils.quartos.list.invalidate();
-      toast.success("Comparação salva com sucesso!");
+      utils.quartos.listByMonth.invalidate();
+      toast.success("Arquivo de taquigrafia enviado!");
     },
     onError: (error) => {
-      toast.error("Erro ao salvar comparação: " + error.message);
+      toast.error(`Erro ao enviar arquivo: ${error.message}`);
     },
   });
 
-  const extrairTextoDocx = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value;
-  };
+  const uploadRedacaoFinal = trpc.quartos.uploadArquivoRedacaoFinal.useMutation({
+    onSuccess: () => {
+      utils.quartos.listByMonth.invalidate();
+      toast.success("Arquivo de redação final enviado!");
+    },
+    onError: (error) => {
+      toast.error(`Erro ao enviar arquivo: ${error.message}`);
+    },
+  });
 
-  const handleFileUpload = async (tipo: "original" | "revisado", file: File) => {
-    if (!file) return;
+  const salvarComparacao = trpc.quartos.salvarComparacao.useMutation({
+    onSuccess: () => {
+      utils.quartos.listByMonth.invalidate();
+      toast.success("Comparação salva com sucesso!");
+    },
+  });
 
-    setUploading(true);
-    try {
-      let texto = "";
-
-      if (file.name.endsWith(".docx")) {
-        texto = await extrairTextoDocx(file);
-      } else if (file.name.endsWith(".txt")) {
-        texto = await file.text();
-      } else {
-        toast.error("Formato não suportado. Use .docx ou .txt");
-        return;
-      }
-
-      if (tipo === "original") {
-        setTextoOriginal(texto);
-      } else {
-        setTextoRevisado(texto);
-      }
-
-      toast.success(`Arquivo ${tipo} carregado com sucesso!`);
-    } catch (error) {
-      console.error("Erro ao processar arquivo:", error);
-      toast.error("Erro ao processar arquivo");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const compararTextos = async () => {
-    if (!textoOriginal || !textoRevisado) {
-      toast.error("Por favor, carregue ambos os arquivos");
+  const handleFileUpload = async (
+    file: File,
+    tipo: "taquigrafia" | "redacaoFinal"
+  ) => {
+    if (!file.name.endsWith(".docx")) {
+      toast.error("Por favor, envie apenas arquivos .docx");
       return;
     }
 
+    setUploading(true);
     try {
-      // Usar biblioteca diff para comparar
-      const diff = Diff.diffWords(textoOriginal, textoRevisado);
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target?.result as string;
+        
+        if (tipo === "taquigrafia") {
+          await uploadTaquigrafia.mutateAsync({
+            quartoId: quarto.id,
+            fileBase64: base64,
+            fileName: file.name,
+          });
+        } else {
+          await uploadRedacaoFinal.mutateAsync({
+            quartoId: quarto.id,
+            fileBase64: base64,
+            fileName: file.name,
+          });
+        }
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      setUploading(false);
+      toast.error("Erro ao processar arquivo");
+    }
+  };
+
+  const compararDocumentos = async () => {
+    if (!quarto.arquivoTaquigrafia || !quarto.arquivoRedacaoFinal) {
+      toast.error("Envie ambos os arquivos antes de comparar");
+      return;
+    }
+
+    setComparing(true);
+    try {
+      // Converter base64 para ArrayBuffer
+      const taquigrafiaBuffer = await fetch(quarto.arquivoTaquigrafia).then(r => r.arrayBuffer());
+      const redacaoBuffer = await fetch(quarto.arquivoRedacaoFinal).then(r => r.arrayBuffer());
+
+      // Extrair texto dos documentos Word
+      const taquigrafiaTexto = await mammoth.extractRawText({ arrayBuffer: taquigrafiaBuffer });
+      const redacaoTexto = await mammoth.extractRawText({ arrayBuffer: redacaoBuffer });
+
+      // Comparar textos
+      const diff = Diff.diffWords(taquigrafiaTexto.value, redacaoTexto.value);
 
       // Calcular estatísticas
       let adicionadas = 0;
@@ -91,66 +120,131 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
       let inalteradas = 0;
 
       diff.forEach((part) => {
-        const palavras = part.value.trim().split(/\s+/).filter(p => p.length > 0).length;
         if (part.added) {
-          adicionadas += palavras;
+          adicionadas += part.value.split(/\s+/).length;
         } else if (part.removed) {
-          removidas += palavras;
+          removidas += part.value.split(/\s+/).length;
         } else {
-          inalteradas += palavras;
+          inalteradas += part.value.split(/\s+/).length;
         }
       });
 
-      const totalAlteracoes = adicionadas + removidas;
       const totalPalavras = adicionadas + removidas + inalteradas;
-      const taxaPrecisao =
-        totalPalavras > 0
-          ? ((inalteradas / totalPalavras) * 100).toFixed(1)
-          : "0.0";
+      const totalAlteracoes = adicionadas + removidas;
+      const taxaPrecisao = totalPalavras > 0 
+        ? ((inalteradas / totalPalavras) * 100).toFixed(1)
+        : "0.0";
 
       // Salvar comparação no banco
       await salvarComparacao.mutateAsync({
         quartoId: quarto.id,
         taxaPrecisao,
-        palavrasAdicionadas: adicionadas,
-        palavrasRemovidas: removidas,
-        palavrasInalteradas: inalteradas,
         totalAlteracoes,
-        totalPalavras,
       });
 
+      // Mostrar resultado
       setResultadoComparacao({
         diff,
         stats: {
-          taxaPrecisao,
           adicionadas,
           removidas,
           inalteradas,
-          totalAlteracoes,
           totalPalavras,
+          totalAlteracoes,
+          taxaPrecisao,
         },
       });
 
       setShowComparacao(true);
-      setShowDialog(false);
+      setComparing(false);
     } catch (error) {
       console.error("Erro ao comparar:", error);
       toast.error("Erro ao comparar documentos");
+      setComparing(false);
     }
   };
 
+  const temAmbosArquivos = quarto.arquivoTaquigrafia && quarto.arquivoRedacaoFinal;
+
+  const exportarTXT = () => {
+    if (!resultadoComparacao) return;
+
+    const dataRegistro = new Date(quarto.dataRegistro).toLocaleDateString("pt-BR");
+    const dificuldadeMap: Record<string, string> = {
+      NA: "Não avaliado",
+      Facil: "Fácil",
+      Medio: "Médio",
+      Dificil: "Difícil"
+    };
+
+    // Gerar texto comparado com marcações
+    let textoComparado = "";
+    resultadoComparacao.diff.forEach((part: any) => {
+      if (part.added) {
+        textoComparado += `[+${part.value}+]`;
+      } else if (part.removed) {
+        textoComparado += `[-${part.value}-]`;
+      } else {
+        textoComparado += part.value;
+      }
+    });
+
+    const conteudo = `${APP_TITLE}
+por Fernando Mesquita
+
+${"-".repeat(60)}
+
+INFORMAÇÕES DO QUARTO
+
+Quarto: ${quarto.codigoQuarto}
+Data: ${dataRegistro}
+Dificuldade: ${dificuldadeMap[quarto.dificuldade] || "Não avaliado"}
+
+${"-".repeat(60)}
+
+ESTATÍSTICAS DA COMPARAÇÃO
+
+Taxa de Precisão: ${resultadoComparacao.stats.taxaPrecisao}%
+Palavras Adicionadas: ${resultadoComparacao.stats.adicionadas}
+Palavras Removidas: ${resultadoComparacao.stats.removidas}
+Palavras Inalteradas: ${resultadoComparacao.stats.inalteradas}
+Total de Alterações: ${resultadoComparacao.stats.totalAlteracoes}
+Total de Palavras: ${resultadoComparacao.stats.totalPalavras}
+
+${"-".repeat(60)}
+
+TEXTO COMPARADO
+
+Legenda:
+[+texto+] = Texto adicionado
+[-texto-] = Texto removido
+
+${textoComparado}
+
+${"-".repeat(60)}
+
+Gerado em: ${new Date().toLocaleString("pt-BR")}
+`;
+
+    const blob = new Blob([conteudo], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `comparacao_${quarto.codigoQuarto.replace("/", "-")}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Arquivo TXT baixado!");
+  };
+
   const exportarPDF = async () => {
-    if (!resultadoComparacao) {
-      toast.error("Nenhuma comparação para exportar");
-      return;
-    }
+    if (!resultadoComparacao) return;
 
     try {
-      // Formatar data
       const dataRegistro = new Date(quarto.dataRegistro).toLocaleDateString("pt-BR");
-      
-      // Mapear dificuldade
       const dificuldadeMap: Record<string, string> = {
+        NA: "Não avaliado",
         Facil: "Fácil",
         Medio: "Médio",
         Dificil: "Difícil"
@@ -186,7 +280,7 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
       // Informações do Quarto
       doc.setFontSize(14);
       doc.setTextColor(59, 130, 246);
-      doc.text("Informações do Quarto", margin, yPos);
+      doc.text("Informa\u00e7\u00f5es do Quarto", margin, yPos);
       yPos += 8;
 
       doc.setFontSize(10);
@@ -195,18 +289,18 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
       yPos += 6;
       doc.text(`Data: ${dataRegistro}`, margin, yPos);
       yPos += 6;
-      doc.text(`Dificuldade: ${dificuldadeMap[quarto.dificuldade] || "Não avaliado"}`, margin, yPos);
+      doc.text(`Dificuldade: ${dificuldadeMap[quarto.dificuldade] || "N\u00e3o avaliado"}`, margin, yPos);
       yPos += 12;
 
       // Estatísticas da Comparação
       doc.setFontSize(14);
       doc.setTextColor(59, 130, 246);
-      doc.text("Estatísticas da Comparação", margin, yPos);
+      doc.text("Estat\u00edsticas da Compara\u00e7\u00e3o", margin, yPos);
       yPos += 8;
 
       doc.setFontSize(10);
       doc.setTextColor(0, 0, 0);
-      doc.text(`Taxa de Precisão: ${resultadoComparacao.stats.taxaPrecisao}%`, margin, yPos);
+      doc.text(`Taxa de Precis\u00e3o: ${resultadoComparacao.stats.taxaPrecisao}%`, margin, yPos);
       yPos += 6;
       doc.text(`Palavras Adicionadas: ${resultadoComparacao.stats.adicionadas}`, margin, yPos);
       yPos += 6;
@@ -214,7 +308,7 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
       yPos += 6;
       doc.text(`Palavras Inalteradas: ${resultadoComparacao.stats.inalteradas}`, margin, yPos);
       yPos += 6;
-      doc.text(`Total de Alterações: ${resultadoComparacao.stats.totalAlteracoes}`, margin, yPos);
+      doc.text(`Total de Altera\u00e7\u00f5es: ${resultadoComparacao.stats.totalAlteracoes}`, margin, yPos);
       yPos += 6;
       doc.text(`Total de Palavras: ${resultadoComparacao.stats.totalPalavras}`, margin, yPos);
       yPos += 12;
@@ -323,164 +417,224 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
     }
   };
 
-  // Se mostrar apenas resultado e não há comparação, não renderizar nada
-  if (mostrarApenasResultado && !quarto.comparacaoRealizada) {
-    return null;
-  }
-
-  // Se mostrar apenas resultado
-  if (mostrarApenasResultado) {
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={exportarPDF}
-        className="gap-2"
-      >
-        <Download className="h-4 w-4" />
-        Baixar PDF
-      </Button>
-    );
-  }
-
-  // Renderização normal com dialog
   return (
-    <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <FileText className="h-4 w-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Comparação de Documentos</DialogTitle>
-          <DialogDescription>
-            Compare o documento original com a versão revisada
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogTrigger asChild>
+          {mostrarApenasResultado ? (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (quarto.comparacaoRealizada) {
+                  compararDocumentos();
+                }
+              }}
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Ver Comparação
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm">
+              <FileText className="h-4 w-4 mr-2" />
+              Arquivos
+            </Button>
+          )}
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Comparação de Documentos</DialogTitle>
+            <DialogDescription>
+              <span className="font-semibold text-blue-600">Quarto {quarto.codigoQuarto}</span>
+              <br />
+              Envie o arquivo de taquigrafia original e a redação final para comparar
+            </DialogDescription>
+          </DialogHeader>
 
-        {!showComparacao ? (
-          <div className="grid gap-6 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="original">Documento Original</Label>
-                <div className="flex flex-col gap-2">
-                  <input
-                    id="original"
-                    type="file"
-                    accept=".docx,.txt"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleFileUpload("original", file);
-                    }}
-                    className="text-sm"
-                    disabled={uploading}
-                  />
-                  {textoOriginal && (
-                    <p className="text-xs text-muted-foreground">
-                      ✓ Arquivo carregado ({textoOriginal.length} caracteres)
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="revisado">Documento Revisado</Label>
-                <div className="flex flex-col gap-2">
-                  <input
-                    id="revisado"
-                    type="file"
-                    accept=".docx,.txt"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleFileUpload("revisado", file);
-                    }}
-                    className="text-sm"
-                    disabled={uploading}
-                  />
-                  {textoRevisado && (
-                    <p className="text-xs text-muted-foreground">
-                      ✓ Arquivo carregado ({textoRevisado.length} caracteres)
-                    </p>
-                  )}
-                </div>
+          <div className="space-y-6 py-4">
+            {/* Upload Taquigrafia */}
+            <div className="space-y-2">
+              <Label>📝 Taquigrafia Original</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  accept=".docx"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(file, "taquigrafia");
+                  }}
+                  className="hidden"
+                  id="taquigrafia-upload"
+                  disabled={uploading}
+                />
+                <label
+                  htmlFor="taquigrafia-upload"
+                  className="flex-1 cursor-pointer"
+                >
+                  <div className="border-2 border-dashed rounded-lg p-4 hover:border-blue-500 transition-colors">
+                    {quarto.arquivoTaquigrafiaName ? (
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-green-600" />
+                        <span className="text-sm font-medium">
+                          {quarto.arquivoTaquigrafiaName}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Upload className="h-5 w-5" />
+                        <span className="text-sm">Clique para enviar .docx</span>
+                      </div>
+                    )}
+                  </div>
+                </label>
               </div>
             </div>
 
-            <Button
-              onClick={compararTextos}
-              disabled={!textoOriginal || !textoRevisado || uploading}
-              className="w-full"
-            >
-              {uploading ? "Processando..." : "Comparar Documentos"}
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-6 py-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Estatísticas da Comparação</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Taxa de Precisão</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {resultadoComparacao?.stats.taxaPrecisao}%
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Palavras Adicionadas</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {resultadoComparacao?.stats.adicionadas}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Palavras Removidas</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {resultadoComparacao?.stats.removidas}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Palavras Inalteradas</p>
-                  <p className="text-2xl font-bold">
-                    {resultadoComparacao?.stats.inalteradas}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total de Alterações</p>
-                  <p className="text-2xl font-bold">
-                    {resultadoComparacao?.stats.totalAlteracoes}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total de Palavras</p>
-                  <p className="text-2xl font-bold">
-                    {resultadoComparacao?.stats.totalPalavras}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Upload Redação Final */}
+            <div className="space-y-2">
+              <Label>✅ Redação Final</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  accept=".docx"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(file, "redacaoFinal");
+                  }}
+                  className="hidden"
+                  id="redacao-upload"
+                  disabled={uploading}
+                />
+                <label
+                  htmlFor="redacao-upload"
+                  className="flex-1 cursor-pointer"
+                >
+                  <div className="border-2 border-dashed rounded-lg p-4 hover:border-green-500 transition-colors">
+                    {quarto.arquivoRedacaoFinalName ? (
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-green-600" />
+                        <span className="text-sm font-medium">
+                          {quarto.arquivoRedacaoFinalName}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Upload className="h-5 w-5" />
+                        <span className="text-sm">Clique para enviar .docx</span>
+                      </div>
+                    )}
+                  </div>
+                </label>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Texto Comparado</CardTitle>
-                <CardDescription>
-                  <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded mr-2">
-                    Verde = Adicionado
-                  </span>
-                  <span className="inline-block bg-red-100 text-red-800 px-2 py-1 rounded">
-                    Vermelho = Removido
-                  </span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
-                  {resultadoComparacao?.diff.map((part: any, index: number) => (
+            {/* Botão de Comparação */}
+            {temAmbosArquivos && (
+              <div className="pt-4 border-t">
+                <Button
+                  onClick={compararDocumentos}
+                  disabled={comparing}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Eye className="h-5 w-5 mr-2" />
+                  {comparing ? "Comparando..." : "Comparar Documentos"}
+                </Button>
+              </div>
+            )}
+
+            {/* Resultado da Comparação Anterior */}
+            {quarto.comparacaoRealizada && !showComparacao && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="font-medium text-green-900 mb-2">
+                  Última Comparação
+                </h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Taxa de Precisão</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {quarto.taxaPrecisao}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Total de Alterações</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {quarto.totalAlteracoes}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Resultado da Comparação */}
+      {resultadoComparacao && (
+        <Dialog open={showComparacao} onOpenChange={setShowComparacao}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Resultado da Comparação</DialogTitle>
+              <DialogDescription>
+                Análise detalhada das diferenças entre os documentos
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Estatísticas */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">Taxa de Precisão</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {resultadoComparacao.stats.taxaPrecisao}%
+                  </p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">Total de Alterações</p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {resultadoComparacao.stats.totalAlteracoes}
+                  </p>
+                </div>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">Palavras Totais</p>
+                  <p className="text-3xl font-bold text-purple-600">
+                    {resultadoComparacao.stats.totalPalavras}
+                  </p>
+                </div>
+              </div>
+
+              {/* Detalhamento */}
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">➕ Adicionadas</p>
+                  <p className="text-xl font-bold text-green-600">
+                    {resultadoComparacao.stats.adicionadas}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">➖ Removidas</p>
+                  <p className="text-xl font-bold text-red-600">
+                    {resultadoComparacao.stats.removidas}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">✓ Inalteradas</p>
+                  <p className="text-xl font-bold text-gray-600">
+                    {resultadoComparacao.stats.inalteradas}
+                  </p>
+                </div>
+              </div>
+
+              {/* Visualização das Diferenças */}
+              <div className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
+                <h4 className="font-medium mb-3">Diferenças Encontradas:</h4>
+                <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                  {resultadoComparacao.diff.map((part: any, index: number) => (
                     <span
                       key={index}
                       className={
                         part.added
-                          ? "bg-green-200 text-green-900 font-semibold"
+                          ? "bg-green-200 text-green-900"
                           : part.removed
                           ? "bg-red-200 text-red-900 line-through"
                           : ""
@@ -490,31 +644,32 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
                     </span>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            <div className="flex gap-2">
-              <Button onClick={exportarPDF} className="flex-1 gap-2">
-                <Download className="h-4 w-4" />
-                Exportar PDF
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowComparacao(false);
-                  setTextoOriginal("");
-                  setTextoRevisado("");
-                  setResultadoComparacao(null);
-                }}
-                className="flex-1"
-              >
-                Nova Comparação
-              </Button>
+              {/* Botões de Download */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  onClick={() => exportarTXT()}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar TXT
+                </Button>
+                <Button
+                  onClick={() => exportarPDF()}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar PDF
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }
 

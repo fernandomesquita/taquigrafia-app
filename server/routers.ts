@@ -256,6 +256,10 @@ export const appRouter = router({
               revisado: q.revisado,
               observacoesRevisao: q.observacoesRevisao,
               dificuldade: q.dificuldade,
+	   // Dados de comparação
+           comparacaoRealizada: q.comparacaoRealizada,
+           taxaPrecisao: q.taxaPrecisao,
+           totalAlteracoes: q.totalAlteracoes,
             })),
             metas: metas,
           },
