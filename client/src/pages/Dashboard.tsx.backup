@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { APP_LOGO, APP_TITLE } from "@/const";
+import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { BarChart3, CalendarIcon, Download, Eye, LogOut, Plus, Trash2, TrendingUp } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -293,7 +293,7 @@ export default function Dashboard() {
             <CardDescription>Faça login para acessar o sistema</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => (window.location.href = "/login")} className="w-full">
+            <Button onClick={() => (window.location.href = getLoginUrl())} className="w-full">
               Fazer Login
             </Button>
           </CardContent>
