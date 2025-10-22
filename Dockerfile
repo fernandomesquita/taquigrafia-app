@@ -20,5 +20,5 @@ ENV NODE_ENV=production
 # Expose port
 EXPOSE 3000
 
-# Start server
-CMD ["npx", "tsx", "server/_core/index.ts"]
+# Run migrations and start server
+CMD npx drizzle-kit push && npx tsx server/_core/index.ts
