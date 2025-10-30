@@ -49,3 +49,9 @@
 
 - [x] ReferenceError: revisoresUnicos is not defined - erro ao tentar adicionar revisor
 
+
+
+## Ajuste de Altura da Lista
+
+- [x] Alongar verticalmente a exibição dos quartos realizados para preencher todo o espaço do card até o final do box
+

@@ -671,7 +671,7 @@ export default function Dashboard() {
                   Nenhum registro neste mês
                 </p>
               ) : (
-                <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                <div className="space-y-4 flex-1 overflow-y-auto">
                   {Object.entries(quartosAgrupados).map(([data, quartosData]) => (
                     <div key={data} className="border-l-4 border-blue-500 pl-4">
                       <p className="font-bold text-lg text-gray-800 mb-3 border-b pb-2">{data}</p>
