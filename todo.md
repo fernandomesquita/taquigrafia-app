@@ -28,3 +28,11 @@
 - [x] Nome do revisor não está aparecendo no card do quarto após ser marcado como revisado
 - [ ] Estatísticas de revisor não estão sendo exibidas no dashboard - deve mostrar taxa média de precisão agrupada por revisor para identificar quais são mais rigorosos/justos
 
+
+
+## Melhorias de Interface Solicitadas
+
+- [x] Cores diferentes para cada revisor nas estatísticas (ao invés de todos roxos)
+- [x] Alinhar painel de Quartos Revisados com o painel de Estatística de Revisores
+- [x] Implementar autocomplete de nomes de revisores com dropdown de sugestões baseado em nomes já utilizados
+

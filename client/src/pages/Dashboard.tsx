@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [quartoRevisandoId, setQuartoRevisandoId] = useState<string | null>(null);
   const [observacoesRevisao, setObservacoesRevisao] = useState("");
   const [revisor, setRevisor] = useState("");
+  const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
 
   const utils = trpc.useUtils();
 
@@ -292,6 +293,11 @@ export default function Dashboard() {
     const totalRevisados = quartos.filter(q => q.revisado).length;
     const percentualRevisados = total > 0 ? (totalRevisados / total) * 100 : 0;
 
+    // Obter lista de revisores únicos
+    const revisoresUnicos = Array.from(
+      new Set(quartos.filter(q => q.revisor).map(q => q.revisor))
+    ).sort();
+
     return {
       totalQuartos: total,
       totalMinutos: minutos,
@@ -305,6 +311,7 @@ export default function Dashboard() {
       dadosGrafico,
       dadosDificuldade,
       percentualRevisados,
+      revisoresUnicos,
     };
   }, [quartos, metas, selectedMonth, selectedYear]);
 
@@ -812,9 +819,9 @@ export default function Dashboard() {
           </Card>
 
           {/* Cards de Estatísticas */}
-          <div className="space-y-6">
-            {/* Cards Lado a Lado: Quartos Revisados + Taxa Média */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Coluna Esquerda: Quartos Revisados + Taxa Média + Dificuldade */}
+            <div className="space-y-6">
               {/* Card de Percentual Revisado */}
               <Card>
                 <CardHeader className="pb-3">
@@ -890,9 +897,8 @@ export default function Dashboard() {
                   })()}
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Card de Dificuldade */}
+              {/* Card de Dificuldade */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Distribuição por Dificuldade</CardTitle>
@@ -938,10 +944,12 @@ export default function Dashboard() {
                 )}
               </CardContent>
             </Card>
+            </div>
 
-            {/* Estatística por Revisor */}
-            <EstatisticaRevisor quartos={quartos} />
-
+            {/* Coluna Direita: Estatística por Revisor */}
+            <div>
+              <EstatisticaRevisor quartos={quartos} />
+            </div>
           </div>
         </div>
 
@@ -955,15 +963,40 @@ export default function Dashboard() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div>
+              <div className="relative">
                 <Label htmlFor="revisor">Revisor *</Label>
                 <Input
                   id="revisor"
                   placeholder="Nome do revisor"
                   value={revisor}
-                  onChange={(e) => setRevisor(e.target.value)}
+                  onChange={(e) => {
+                    setRevisor(e.target.value);
+                    setMostrarSugestoes(true);
+                  }}
+                  onFocus={() => setMostrarSugestoes(true)}
+                  onBlur={() => setTimeout(() => setMostrarSugestoes(false), 200)}
                   required
                 />
+                {mostrarSugestoes && revisor && revisoresUnicos.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+                    {revisoresUnicos
+                      .filter(r => r.toLowerCase().includes(revisor.toLowerCase()))
+                      .map((r) => (
+                        <button
+                          key={r}
+                          type="button"
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                          onClick={() => {
+                            setRevisor(r);
+                            setMostrarSugestoes(false);
+                          }}
+                        >
+                          {r}
+                        </button>
+                      ))
+                    }
+                  </div>
+                )}
               </div>
               <div>
                 <Label htmlFor="observacoesRevisao">Observações da Revisão</Label>

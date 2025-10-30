@@ -6,6 +6,18 @@ interface EstatisticaRevisorProps {
 }
 
 export function EstatisticaRevisor({ quartos }: EstatisticaRevisorProps) {
+  // Paleta de cores para revisores
+  const coresRevisores = [
+    { bg: "bg-purple-100", text: "text-purple-700", badge: "text-purple-600" },
+    { bg: "bg-blue-100", text: "text-blue-700", badge: "text-blue-600" },
+    { bg: "bg-green-100", text: "text-green-700", badge: "text-green-600" },
+    { bg: "bg-orange-100", text: "text-orange-700", badge: "text-orange-600" },
+    { bg: "bg-pink-100", text: "text-pink-700", badge: "text-pink-600" },
+    { bg: "bg-indigo-100", text: "text-indigo-700", badge: "text-indigo-600" },
+    { bg: "bg-teal-100", text: "text-teal-700", badge: "text-teal-600" },
+    { bg: "bg-red-100", text: "text-red-700", badge: "text-red-600" },
+  ];
+
   // Filtrar apenas quartos revisados com revisor e taxa de precisão
   const quartosRevisados = quartos.filter(
     (q) => q.revisado && q.revisor && q.taxaPrecisao
@@ -54,30 +66,33 @@ export function EstatisticaRevisor({ quartos }: EstatisticaRevisorProps) {
       <CardContent>
         {/* Tabela de Revisores */}
         <div className="mb-6 space-y-3">
-          {dadosRevisores.map((item: any, index) => (
-            <div
-              key={item.revisor}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-sm">
-                  {index + 1}
+          {dadosRevisores.map((item: any, index) => {
+            const cor = coresRevisores[index % coresRevisores.length];
+            return (
+              <div
+                key={item.revisor}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${cor.bg} ${cor.text} font-bold text-sm`}>
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="font-medium">{item.revisor}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.totalQuartos} quarto{item.totalQuartos > 1 ? "s" : ""}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{item.revisor}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.totalQuartos} quarto{item.totalQuartos > 1 ? "s" : ""}
+                <div className="text-right">
+                  <p className={`text-2xl font-bold ${cor.badge}`}>
+                    {item.mediaPrecisao}%
                   </p>
+                  <p className="text-xs text-muted-foreground">Precisão média</p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-purple-600">
-                  {item.mediaPrecisao}%
-                </p>
-                <p className="text-xs text-muted-foreground">Precisão média</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Gráfico de Barras */}
