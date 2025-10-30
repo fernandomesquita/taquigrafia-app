@@ -56,6 +56,9 @@ export default function Home() {
             >
               Começar Agora
             </Button>
+            <p className="text-sm text-gray-500 mt-4">
+              Inclui comparação automática de documentos para análise de qualidade do trabalho
+            </p>
           </div>
         </div>
 
@@ -129,6 +132,7 @@ export default function Home() {
       <footer className="bg-white border-t mt-16">
         <div className="container mx-auto px-4 py-6 text-center text-gray-600">
           <p>© 2025 Sistema de Registro de Taquigrafia. Todos os direitos reservados.</p>
+          <p className="text-sm mt-2">Desenvolvido por Fernando Mesquita</p>
         </div>
       </footer>
     </div>

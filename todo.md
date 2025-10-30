@@ -55,3 +55,10 @@
 
 - [x] Alongar verticalmente a exibição dos quartos realizados para preencher todo o espaço do card até o final do box
 
+
+
+## Melhorias da Home Page
+
+- [x] Adicionar "Desenvolvido por Fernando Mesquita" no footer da home page
+- [x] Adicionar informação sobre comparação automática de documentos abaixo do botão "Começar Agora"
+
