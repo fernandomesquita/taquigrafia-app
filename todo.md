@@ -105,3 +105,12 @@
 - [x] Adicionar estatísticas de precisão média do mês ao final do PDF
 - [x] Adicionar estatística de precisão média global (todos os meses) ao final do PDF
 
+
+
+## Melhorias de Layout do Dashboard
+
+- [x] Adicionar fundo azul bem claro no box "Registrar Quartos"
+- [x] Criar box de estatísticas compiladas ao lado do box "Faltam X DIAS" contendo:
+  - Quartos registrados / Quartos restantes
+  - Taxa média de precisão
+

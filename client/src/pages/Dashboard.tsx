@@ -149,7 +149,7 @@ export default function Dashboard() {
   });
 
   // Cálculos
-  const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, diasUteisRestantes, mediaNecessaria, quartosAgrupados, trabalhoHoje, dadosGrafico, dadosDificuldade, percentualRevisados, revisoresUnicos } = useMemo(() => {
+  const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, diasUteisRestantes, mediaNecessaria, quartosAgrupados, trabalhoHoje, dadosGrafico, dadosDificuldade, percentualRevisados, revisoresUnicos, quartosComPrecisao } = useMemo(() => {
     const total = quartos.length; // cada registro = 1 quarto
     const minutos = total * 4;
 
@@ -300,6 +300,9 @@ export default function Dashboard() {
       new Set(quartos.filter(q => q.revisor).map(q => q.revisor))
     ).sort();
 
+    // Filtrar quartos com taxa de precisão
+    const quartosComPrecisao = quartos.filter(q => q.taxaPrecisao && q.taxaPrecisao !== '');
+
     return {
       totalQuartos: total,
       totalMinutos: minutos,
@@ -314,6 +317,7 @@ export default function Dashboard() {
       dadosDificuldade,
       percentualRevisados,
       revisoresUnicos,
+      quartosComPrecisao,
     };
   }, [quartos, metas, selectedMonth, selectedYear]);
 
@@ -369,10 +373,10 @@ export default function Dashboard() {
         </Button>
       </div>
 
-        {/* Formulário de Registro + Dias Restantes */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* Formulário de Registro + Dias Restantes + Estatísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           {/* Formulário de Registro */}
-          <Card className="md:col-span-2">
+          <Card className="md:col-span-2 bg-blue-50/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Plus className="h-5 w-5" />
@@ -427,6 +431,30 @@ export default function Dashboard() {
               </p>
               <p className="text-lg text-muted-foreground mt-2">DIAS</p>
               <p className="text-sm text-muted-foreground mt-1">para acabar o mês</p>
+            </CardContent>
+          </Card>
+
+          {/* Card de Estatísticas Compiladas */}
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <CardContent className="flex flex-col justify-center h-full py-6 space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-1">Progresso</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {totalQuartos} / {metaMensal}
+                </p>
+                <p className="text-xs text-muted-foreground">quartos</p>
+              </div>
+              <div className="border-t border-blue-200 pt-3 text-center">
+                <p className="text-sm text-muted-foreground mb-1">Precisão Média</p>
+                <p className="text-2xl font-bold text-indigo-600">
+                  {quartosComPrecisao.length > 0
+                    ? `${(quartosComPrecisao.reduce((sum, q) => sum + parseFloat(q.taxaPrecisao || '0'), 0) / quartosComPrecisao.length).toFixed(1)}%`
+                    : '-'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {quartosComPrecisao.length > 0 ? `${quartosComPrecisao.length} quartos` : 'sem dados'}
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
