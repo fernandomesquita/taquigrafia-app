@@ -754,6 +754,9 @@ export default function Dashboard() {
                                 />
                                 <span className={quarto.revisado ? "text-green-600 font-medium" : "text-muted-foreground"}>
                                   REVISADO
+                                  {quarto.revisado && quarto.revisor && (
+                                    <span className="ml-1 text-xs font-normal">por {quarto.revisor}</span>
+                                  )}
                                 </span>
                               </label>
                               <div className="flex items-center gap-2">

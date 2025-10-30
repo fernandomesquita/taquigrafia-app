@@ -22,3 +22,9 @@
 - [x] Reorganizar Dashboard removendo elementos duplicados
 - [x] Aplicar LayoutComAbas em todas as páginas
 
+
+## Bugs para Corrigir
+
+- [x] Nome do revisor não está aparecendo no card do quarto após ser marcado como revisado
+- [ ] Estatísticas de revisor não estão sendo exibidas no dashboard - deve mostrar taxa média de precisão agrupada por revisor para identificar quais são mais rigorosos/justos
+
