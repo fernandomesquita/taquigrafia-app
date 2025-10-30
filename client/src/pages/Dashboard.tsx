@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [quartoRevisandoId, setQuartoRevisandoId] = useState<string | null>(null);
+  const [quartoComparacaoId, setQuartoComparacaoId] = useState<string | null>(null);
   const [observacoesRevisao, setObservacoesRevisao] = useState("");
   const [revisor, setRevisor] = useState("");
   const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
@@ -655,7 +656,15 @@ export default function Dashboard() {
         </Card>
 
         {/* Gráfico de Precisão */}
-        <GraficoPrecisao quartos={quartos} />
+        <GraficoPrecisao 
+          quartos={quartos} 
+          onQuartoClick={(quartoId) => {
+            const quarto = quartos.find(q => q.id === quartoId);
+            if (quarto) {
+              setQuartoComparacaoId(quartoId);
+            }
+          }}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
@@ -1056,6 +1065,18 @@ export default function Dashboard() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Dialog de Comparação de Documentos (aberto pelo gráfico) */}
+        {quartoComparacaoId && (
+          <Dialog open={quartoComparacaoId !== null} onOpenChange={(open) => !open && setQuartoComparacaoId(null)}>
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+              <ComparacaoDocumentos 
+                quarto={quartos.find(q => q.id === quartoComparacaoId)!} 
+                mostrarApenasResultado={false}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
     </LayoutComAbas>
   );
 }

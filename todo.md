@@ -90,3 +90,10 @@
 
 - [x] Gráfico de precisão não está sendo exibido no dashboard após correção de validação - corrigido para usar dataRegistro ao invés de dataHora
 
+
+
+## Melhorias do Gráfico de Precisão
+
+- [x] Cores das bolinhas do gráfico devem corresponder às cores dos revisores na tabela de estatísticas
+- [x] Ao clicar na bolinha do gráfico, abrir modal de comparação de documentos do quarto correspondente
+
