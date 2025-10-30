@@ -36,3 +36,10 @@
 - [x] Alinhar painel de Quartos Revisados com o painel de Estatística de Revisores
 - [x] Implementar autocomplete de nomes de revisores com dropdown de sugestões baseado em nomes já utilizados
 
+
+
+## Ajustes de Layout e Footer
+
+- [x] Adicionar footer com "Desenvolvido por Fernando Mesquita" e informações de versionamento
+- [x] Esticar verticalmente o painel de "Registros do Mês" para alinhar com os cards da direita
+

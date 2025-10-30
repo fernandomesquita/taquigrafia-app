@@ -656,14 +656,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Lista de Registros */}
-          <Card>
+          <Card className="flex flex-col h-full">
             <CardHeader>
               <CardTitle>Registros do Mês</CardTitle>
               <CardDescription>
                 {quartos.length} {quartos.length === 1 ? "registro" : "registros"}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 flex flex-col">
               {loadingQuartos ? (
                 <p className="text-muted-foreground">Carregando...</p>
               ) : quartos.length === 0 ? (
@@ -952,6 +952,22 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="mt-12 py-6 border-t">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="text-sm text-muted-foreground">
+                <p>© 2025 Sistema de Registro de Taquigrafia. Todos os direitos reservados.</p>
+                <p className="mt-1">Desenvolvido por <span className="font-semibold text-foreground">Fernando Mesquita</span></p>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <p>Versão 2.1.0</p>
+                <p className="mt-1 text-xs">Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
+              </div>
+            </div>
+          </div>
+        </footer>
 
         {/* Dialog de Observações de Revisão */}
         <Dialog open={quartoRevisandoId !== null} onOpenChange={(open) => !open && setQuartoRevisandoId(null)}>
