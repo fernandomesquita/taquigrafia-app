@@ -15,9 +15,14 @@ interface GraficoPrecisaoProps {
 }
 
 export function GraficoPrecisao({ quartos }: GraficoPrecisaoProps) {
-  // Filtrar apenas quartos com taxa de precisão e agrupar por data
+  // Filtrar apenas quartos com taxa de precisão e dataHora válida
   const dadosPrecisao = quartos
-    .filter(q => q.taxaPrecisao !== null && q.taxaPrecisao !== undefined)
+    .filter(q => 
+      q.taxaPrecisao !== null && 
+      q.taxaPrecisao !== undefined && 
+      q.dataHora !== null && 
+      q.dataHora !== undefined
+    )
     .sort((a, b) => {
       const dateA = typeof a.dataHora === 'string' ? new Date(a.dataHora) : a.dataHora;
       const dateB = typeof b.dataHora === 'string' ? new Date(b.dataHora) : b.dataHora;

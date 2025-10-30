@@ -78,3 +78,9 @@
 - [x] Tooltip não mostra o nome do revisor
 - [x] Código do quarto não aparece corretamente no tooltip
 
+
+
+## Bug Crítico - Gráfico de Precisão
+
+- [x] TypeError: Cannot read properties of undefined (reading 'getTime') - erro ao carregar gráfico quando dataHora é undefined
+
