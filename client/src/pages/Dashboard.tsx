@@ -27,6 +27,7 @@ import { ComparacaoDocumentos } from "@/components/ComparacaoDocumentos";
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { GraficoPrecisao } from "@/components/GraficoPrecisao";
 
 export default function Dashboard() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -653,7 +654,10 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Gráfico de Precisão */}
+        <GraficoPrecisao quartos={quartos} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
           {/* Lista de Registros */}
           <Card className="flex flex-col h-full">

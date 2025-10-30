@@ -62,3 +62,10 @@
 - [x] Adicionar "Desenvolvido por Fernando Mesquita" no footer da home page
 - [x] Adicionar informação sobre comparação automática de documentos abaixo do botão "Começar Agora"
 
+
+
+## Novo Gráfico de Precisão
+
+- [x] Criar gráfico de curvas elegante mostrando evolução do percentual de precisão dos quartos ao longo do tempo
+- [x] Posicionar abaixo do gráfico de produção diária x metas
+
