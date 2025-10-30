@@ -58,6 +58,12 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
     },
   });
 
+  const updateRevisado = trpc.quartos.updateRevisado.useMutation({
+    onSuccess: () => {
+      utils.quartos.listByMonth.invalidate();
+    },
+  });
+
   const handleFileUpload = async (
     file: File,
     tipo: "taquigrafia" | "redacaoFinal"
@@ -141,6 +147,14 @@ export function ComparacaoDocumentos({ quarto, mostrarApenasResultado = false }:
         taxaPrecisao,
         totalAlteracoes,
       });
+
+      // Auto-marcar como revisado após comparação
+      if (!quarto.revisado) {
+        await updateRevisado.mutateAsync({
+          id: quarto.id,
+          revisado: true,
+        });
+      }
 
       // Mostrar resultado
       setResultadoComparacao({
@@ -324,35 +338,72 @@ Gerado em: ${new Date().toLocaleString("pt-BR")}
       doc.text("Verde = Adicionado | Vermelho = Removido", margin, yPos);
       yPos += 8;
 
-      // Processar texto comparado
+      // Processar texto comparado - Renderizar de forma contínua
       doc.setFontSize(9);
-      resultadoComparacao.diff.forEach((part: any) => {
-        const lines = doc.splitTextToSize(part.value, maxWidth);
+      doc.setTextColor(0, 0, 0);
+      
+      // Construir texto formatado mantendo o fluxo natural
+      let textoFormatado = '';
+      resultadoComparacao.diff.forEach((part: any, index: number) => {
+        const texto = part.value;
         
-        lines.forEach((line: string) => {
+        if (part.added) {
+          textoFormatado += `[+${texto}+]`;
+        } else if (part.removed) {
+          textoFormatado += `[-${texto}-]`;
+        } else {
+          textoFormatado += texto;
+        }
+      });
+      
+      // Quebrar em parágrafos naturais
+      const paragrafos = textoFormatado.split(/\n+/).filter(p => p.trim());
+      
+      paragrafos.forEach((paragrafo) => {
+        // Processar cada parágrafo
+        const linhas = doc.splitTextToSize(paragrafo, maxWidth);
+        
+        linhas.forEach((linha: string) => {
           // Verificar se precisa de nova página
           if (yPos > 270) {
             doc.addPage();
             yPos = 20;
           }
-
-          if (part.added) {
-            doc.setTextColor(20, 83, 45); // Verde escuro
-            doc.setFillColor(134, 239, 172); // Verde claro
-            const textWidth = doc.getTextWidth(line);
-            doc.rect(margin - 1, yPos - 3, textWidth + 2, 5, 'F');
-          } else if (part.removed) {
-            doc.setTextColor(127, 29, 29); // Vermelho escuro
-            doc.setFillColor(252, 165, 165); // Vermelho claro
-            const textWidth = doc.getTextWidth(line);
-            doc.rect(margin - 1, yPos - 3, textWidth + 2, 5, 'F');
-          } else {
-            doc.setTextColor(0, 0, 0); // Preto
-          }
-
-          doc.text(line, margin, yPos);
+          
+          // Processar marcações na linha
+          let xPos = margin;
+          const partes = linha.split(/([\[\+].*?[\+\]]|[\[\-].*?[\-\]])/g).filter(p => p);
+          
+          partes.forEach((parte) => {
+            if (parte.startsWith('[+') && parte.endsWith('+]')) {
+              // Texto adicionado (verde)
+              const texto = parte.slice(2, -2);
+              doc.setTextColor(22, 163, 74); // Verde
+              doc.setFont(undefined, 'bold');
+              doc.text(texto, xPos, yPos);
+              doc.setFont(undefined, 'normal');
+              xPos += doc.getTextWidth(texto);
+            } else if (parte.startsWith('[-') && parte.endsWith('-]')) {
+              // Texto removido (vermelho)
+              const texto = parte.slice(2, -2);
+              doc.setTextColor(220, 38, 38); // Vermelho
+              doc.setFont(undefined, 'italic');
+              doc.text(texto, xPos, yPos);
+              doc.setFont(undefined, 'normal');
+              xPos += doc.getTextWidth(texto);
+            } else {
+              // Texto normal (preto)
+              doc.setTextColor(0, 0, 0);
+              doc.text(parte, xPos, yPos);
+              xPos += doc.getTextWidth(parte);
+            }
+          });
+          
           yPos += 5;
         });
+        
+        // Espaço entre parágrafos
+        yPos += 2;
       });
 
       // Rodapé

@@ -123,13 +123,16 @@ export async function deleteQuarto(id: string, userId: string) {
   await db.delete(quartos).where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
 }
 
-export async function updateQuartoRevisado(id: string, userId: string, revisado: boolean, observacoesRevisao?: string) {
+export async function updateQuartoRevisado(id: string, userId: string, revisado: boolean, observacoesRevisao?: string, revisor?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
   const updateData: any = { revisado };
   if (observacoesRevisao !== undefined) {
     updateData.observacoesRevisao = observacoesRevisao || null;
+  }
+  if (revisor !== undefined) {
+    updateData.revisor = revisor || null;
   }
   
   await db.update(quartos)
@@ -143,6 +146,15 @@ export async function updateQuartoDificuldade(id: string, userId: string, dificu
   
   await db.update(quartos)
     .set({ dificuldade })
+    .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
+}
+
+export async function updateQuartoStatus(id: string, userId: string, status: "pendente" | "concluido") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(quartos)
+    .set({ status })
     .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
 }
 

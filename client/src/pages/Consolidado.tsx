@@ -1,9 +1,9 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { APP_LOGO, APP_TITLE } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { LayoutComAbas } from "@/components/LayoutComAbas";
 import { useMemo } from "react";
 import { useLocation } from "wouter";
 
@@ -96,25 +96,7 @@ export default function Consolidado() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Header */}
-      <header className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {APP_LOGO && <img src={APP_LOGO} alt="Logo" className="h-8" />}
-            <h1 className="text-2xl font-bold text-gray-900">{APP_TITLE}</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.name || user?.email}</span>
-            <Button variant="outline" size="sm" onClick={() => logout()}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
+    <LayoutComAbas>
         <div className="mb-6">
           <Button variant="outline" onClick={() => setLocation("/dashboard")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -198,8 +180,7 @@ export default function Consolidado() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+    </LayoutComAbas>
   );
 }
 

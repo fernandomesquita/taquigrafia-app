@@ -74,9 +74,10 @@ export const appRouter = router({
         id: z.string(),
         revisado: z.boolean(),
         observacoesRevisao: z.string().optional(),
+        revisor: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        await db.updateQuartoRevisado(input.id, ctx.user.id, input.revisado, input.observacoesRevisao);
+        await db.updateQuartoRevisado(input.id, ctx.user.id, input.revisado, input.observacoesRevisao, input.revisor);
         return { success: true };
       }),
 
@@ -87,6 +88,16 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         await db.updateQuartoDificuldade(input.id, ctx.user.id, input.dificuldade);
+        return { success: true };
+      }),
+
+    updateStatus: protectedProcedure
+      .input(z.object({ 
+        id: z.string(),
+        status: z.enum(["pendente", "concluido"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateQuartoStatus(input.id, ctx.user.id, input.status);
         return { success: true };
       }),
 
@@ -256,6 +267,10 @@ export const appRouter = router({
               revisado: q.revisado,
               observacoesRevisao: q.observacoesRevisao,
               dificuldade: q.dificuldade,
+              // Dados de comparação
+              comparacaoRealizada: q.comparacaoRealizada,
+              taxaPrecisao: q.taxaPrecisao,
+              totalAlteracoes: q.totalAlteracoes,
             })),
             metas: metas,
           },

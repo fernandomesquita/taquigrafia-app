@@ -35,6 +35,8 @@ export const quartos = mysqlTable("quartos", {
   revisado: boolean("revisado").default(false).notNull(), // indica se o quarto foi revisado
   observacoesRevisao: text("observacoesRevisao"), // observações sobre a revisão
   dificuldade: mysqlEnum("dificuldade", ["NA", "Facil", "Medio", "Dificil"]).default("NA").notNull(), // nível de dificuldade do quarto
+  status: mysqlEnum("status", ["pendente", "concluido"]).default("pendente").notNull(), // status do quarto
+  revisor: varchar("revisor", { length: 255 }), // nome do revisor (quando marcado como revisado)
   // Arquivos de comparação
   arquivoTaquigrafia: text("arquivoTaquigrafia"), // arquivo Word com taquigrafia original (base64)
   arquivoTaquigrafiaName: varchar("arquivoTaquigrafiaName", { length: 255 }), // nome do arquivo original

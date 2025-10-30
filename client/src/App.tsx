@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Consolidado from "./pages/Consolidado";
 import Relatorio from "./pages/Relatorio";
+import Backup from "./pages/Backup";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/consolidado" component={Consolidado} />
       <Route path="/relatorio" component={Relatorio} />
+      <Route path="/backup" component={Backup} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
