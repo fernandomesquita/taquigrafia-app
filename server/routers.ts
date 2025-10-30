@@ -418,6 +418,13 @@ export const appRouter = router({
 
         const saldo = totalQuartos - metaMensal;
 
+        // Buscar todos os quartos do usuário para calcular precisão global
+        const todosQuartos = await db.getQuartosByUserId(ctx.user.id);
+        const quartosComPrecisaoGlobal = todosQuartos.filter(q => q.taxaPrecisao && q.taxaPrecisao.trim() !== "");
+        const precisaoMediaGlobal = quartosComPrecisaoGlobal.length > 0
+          ? quartosComPrecisaoGlobal.reduce((acc, q) => acc + parseFloat(q.taxaPrecisao!), 0) / quartosComPrecisaoGlobal.length
+          : 0;
+
         // Gerar PDF
         const pdfBuffer = generatePDF({
           userName: ctx.user.name || ctx.user.email || "Taquígrafo",
@@ -428,6 +435,9 @@ export const appRouter = router({
           totalMinutos,
           metaMensal,
           saldo,
+          precisaoMediaGlobal,
+          totalQuartosGlobal: todosQuartos.length,
+          quartosComPrecisaoGlobal: quartosComPrecisaoGlobal.length,
         });
 
         // Retornar como base64

@@ -97,3 +97,11 @@
 - [x] Cores das bolinhas do gráfico devem corresponder às cores dos revisores na tabela de estatísticas
 - [x] Ao clicar na bolinha do gráfico, abrir modal de comparação de documentos do quarto correspondente
 
+
+
+## Melhoria do PDF Exportado
+
+- [x] Adicionar tabela de quartos no PDF com colunas: Data, Número do Quarto, Anotações, Revisado (Sim/Não), Precisão %, Revisor
+- [x] Adicionar estatísticas de precisão média do mês ao final do PDF
+- [x] Adicionar estatística de precisão média global (todos os meses) ao final do PDF
+

@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import type { Quarto } from "../drizzle/schema";
 
 interface PDFData {
@@ -10,10 +11,13 @@ interface PDFData {
   totalMinutos: number;
   metaMensal: number;
   saldo: number;
+  precisaoMediaGlobal: number;
+  totalQuartosGlobal: number;
+  quartosComPrecisaoGlobal: number;
 }
 
 export function generatePDF(data: PDFData): Buffer {
-  const doc = new jsPDF();
+  const doc = new jsPDF() as any;
   
   // Configurações
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -44,9 +48,9 @@ export function generatePDF(data: PDFData): Buffer {
 
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  doc.text(`Total de Quartos: ${data.totalQuartos.toFixed(1)}`, margin, yPos);
+  doc.text(`Total de Quartos: ${data.totalQuartos}`, margin, yPos);
   yPos += 7;
-  doc.text(`Total de Minutos: ${data.totalMinutos.toFixed(0)}`, margin, yPos);
+  doc.text(`Total de Minutos: ${data.totalMinutos}`, margin, yPos);
   yPos += 7;
   doc.text(`Meta do Mês: ${data.metaMensal.toFixed(1)} quartos`, margin, yPos);
   yPos += 7;
@@ -62,97 +66,107 @@ export function generatePDF(data: PDFData): Buffer {
   doc.setTextColor(0, 0, 0); // Voltar para preto
   yPos += 15;
 
-  // Detalhamento por data
+  // Tabela de Quartos
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("Detalhamento dos Registros", margin, yPos);
+  doc.text("Detalhamento dos Quartos", margin, yPos);
   yPos += 10;
 
-  // Agrupar quartos por data
-  const quartosPorData: Record<string, typeof data.quartos> = {};
-  data.quartos.forEach((quarto) => {
-    const data = new Date(quarto.dataRegistro).toLocaleDateString("pt-BR");
-    if (!quartosPorData[data]) {
-      quartosPorData[data] = [];
-    }
-    quartosPorData[data].push(quarto);
-  });
-
-  // Ordenar datas
-  const datasOrdenadas = Object.keys(quartosPorData).sort((a, b) => {
-    const [diaA, mesA, anoA] = a.split("/").map(Number);
-    const [diaB, mesB, anoB] = b.split("/").map(Number);
-    return new Date(anoA, mesA - 1, diaA).getTime() - new Date(anoB, mesB - 1, diaB).getTime();
-  });
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-
-  datasOrdenadas.forEach((data) => {
-    const quartosData = quartosPorData[data];
-    const totalDia = quartosData.length; // cada registro = 1 quarto
-
-    // Verificar se precisa de nova página
-    if (yPos > 270) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    // Data
-    doc.setFont("helvetica", "bold");
-    doc.text(`${data} - ${totalDia.toFixed(1)} quartos (${(totalDia * 4).toFixed(0)} min)`, margin, yPos);
-    yPos += 6;
-
-    // Registros do dia
-    doc.setFont("helvetica", "normal");
-    quartosData.forEach((quarto) => {
+  // Preparar dados da tabela
+  const tableData = data.quartos
+    .sort((a, b) => new Date(a.dataRegistro).getTime() - new Date(b.dataRegistro).getTime())
+    .map((quarto) => {
+      const data = new Date(quarto.dataRegistro).toLocaleDateString("pt-BR");
       const hora = new Date(quarto.dataRegistro).toLocaleTimeString("pt-BR", {
         hour: "2-digit",
         minute: "2-digit",
       });
-      
-      let texto = `  • ${hora} - ${quarto.codigoQuarto}`;
-      if (quarto.revisado) {
-        texto += " [REVISADO]";
-        if (quarto.observacoesRevisao) {
-          texto += ` (${quarto.observacoesRevisao})`;
-        }
-      }
-      if (quarto.dificuldade && quarto.dificuldade !== "NA") {
-        const dificuldadeLabel = quarto.dificuldade === "Facil" ? "Fácil" : 
-                                  quarto.dificuldade === "Medio" ? "Médio" : 
-                                  quarto.dificuldade === "Dificil" ? "Difícil" : quarto.dificuldade;
-        texto += ` [${dificuldadeLabel}]`;
-      }
-      if (quarto.observacao) {
-        texto += ` - ${quarto.observacao}`;
-      }
+      const revisado = quarto.revisado ? "Sim" : "Não";
+      const precisao = quarto.taxaPrecisao ? `${parseFloat(quarto.taxaPrecisao).toFixed(1)}%` : "-";
+      const revisor = quarto.revisor || "-";
+      const anotacoes = quarto.observacao || "-";
 
-      // Verificar se o texto cabe na linha
-      const textoWidth = doc.getTextWidth(texto);
-      if (textoWidth > pageWidth - 2 * margin) {
-        // Quebrar texto em múltiplas linhas
-        const linhas = doc.splitTextToSize(texto, pageWidth - 2 * margin);
-        linhas.forEach((linha: string) => {
-          if (yPos > 280) {
-            doc.addPage();
-            yPos = 20;
-          }
-          doc.text(linha, margin, yPos);
-          yPos += 5;
-        });
-      } else {
-        if (yPos > 280) {
-          doc.addPage();
-          yPos = 20;
-        }
-        doc.text(texto, margin, yPos);
-        yPos += 5;
-      }
+      return [
+        `${data}\n${hora}`,
+        quarto.codigoQuarto,
+        anotacoes,
+        revisado,
+        precisao,
+        revisor,
+      ];
     });
 
-    yPos += 3;
+  // Criar tabela
+  autoTable(doc, {
+    startY: yPos,
+    head: [["Data/Hora", "Quarto", "Anotações", "Revisado", "Precisão", "Revisor"]],
+    body: tableData,
+    theme: "grid",
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+    },
+    headStyles: {
+      fillColor: [66, 139, 202],
+      textColor: 255,
+      fontStyle: "bold",
+    },
+    columnStyles: {
+      0: { cellWidth: 25 }, // Data/Hora
+      1: { cellWidth: 25 }, // Quarto
+      2: { cellWidth: 45 }, // Anotações
+      3: { cellWidth: 20 }, // Revisado
+      4: { cellWidth: 20 }, // Precisão
+      5: { cellWidth: 30 }, // Revisor
+    },
+    margin: { left: margin, right: margin },
   });
+
+  // Calcular estatísticas de precisão
+  const quartosComPrecisao = data.quartos.filter(q => q.taxaPrecisao && q.taxaPrecisao.trim() !== "");
+  const precisaoMedia = quartosComPrecisao.length > 0
+    ? quartosComPrecisao.reduce((acc, q) => acc + parseFloat(q.taxaPrecisao!), 0) / quartosComPrecisao.length
+    : 0;
+
+  // Posição após a tabela
+  yPos = (doc as any).lastAutoTable.finalY + 15;
+
+  // Verificar se precisa de nova página
+  if (yPos > 250) {
+    doc.addPage();
+    yPos = 20;
+  }
+
+  // Estatísticas de Precisão
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Estatísticas de Precisão", margin, yPos);
+  yPos += 10;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  
+  if (quartosComPrecisao.length > 0) {
+    doc.text(`Precisão Média do Mês: ${precisaoMedia.toFixed(1)}%`, margin, yPos);
+    yPos += 7;
+    doc.text(`Quartos com Comparação: ${quartosComPrecisao.length} de ${data.totalQuartos}`, margin, yPos);
+    yPos += 10;
+  } else {
+    doc.text("Nenhum quarto com comparação de documentos realizada neste mês.", margin, yPos);
+    yPos += 10;
+  }
+
+  // Precisão Média Global
+  doc.setFont("helvetica", "bold");
+  doc.text("Precisão Média Global (Todos os Meses):", margin, yPos);
+  yPos += 7;
+  
+  doc.setFont("helvetica", "normal");
+  if (data.quartosComPrecisaoGlobal > 0) {
+    doc.text(`${data.precisaoMediaGlobal.toFixed(1)}% (baseado em ${data.quartosComPrecisaoGlobal} de ${data.totalQuartosGlobal} quartos)`, margin, yPos);
+  } else {
+    doc.text("Nenhuma comparação de documentos realizada ainda.", margin, yPos);
+  }
 
   // Rodapé
   const pageCount = doc.getNumberOfPages();
