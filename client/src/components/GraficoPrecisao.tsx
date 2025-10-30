@@ -4,9 +4,9 @@ import { TrendingUp } from "lucide-react";
 
 interface Quarto {
   id: string;
-  codigo: string;
-  dataHora: Date | string;
-  taxaPrecisao?: number | null;
+  codigoQuarto: string;
+  dataRegistro: Date | string;
+  taxaPrecisao?: string | null;
   revisor?: string | null;
 }
 
@@ -15,26 +15,28 @@ interface GraficoPrecisaoProps {
 }
 
 export function GraficoPrecisao({ quartos }: GraficoPrecisaoProps) {
-  // Filtrar apenas quartos com taxa de precisão e dataHora válida
+  // Filtrar apenas quartos com taxa de precisão e dataRegistro válida
   const dadosPrecisao = quartos
     .filter(q => 
       q.taxaPrecisao !== null && 
-      q.taxaPrecisao !== undefined && 
-      q.dataHora !== null && 
-      q.dataHora !== undefined
+      q.taxaPrecisao !== undefined &&
+      q.taxaPrecisao !== '' &&
+      q.dataRegistro !== null && 
+      q.dataRegistro !== undefined
     )
     .sort((a, b) => {
-      const dateA = typeof a.dataHora === 'string' ? new Date(a.dataHora) : a.dataHora;
-      const dateB = typeof b.dataHora === 'string' ? new Date(b.dataHora) : b.dataHora;
+      const dateA = typeof a.dataRegistro === 'string' ? new Date(a.dataRegistro) : a.dataRegistro;
+      const dateB = typeof b.dataRegistro === 'string' ? new Date(b.dataRegistro) : b.dataRegistro;
       return dateA.getTime() - dateB.getTime();
     })
     .map(q => {
-      const date = typeof q.dataHora === 'string' ? new Date(q.dataHora) : q.dataHora;
+      const date = typeof q.dataRegistro === 'string' ? new Date(q.dataRegistro) : q.dataRegistro;
+      const precisaoNum = typeof q.taxaPrecisao === 'string' ? parseFloat(q.taxaPrecisao) : q.taxaPrecisao;
       return {
         data: date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         dataCompleta: date.toLocaleDateString('pt-BR'),
-        precisao: q.taxaPrecisao,
-        codigo: q.codigo,
+        precisao: precisaoNum,
+        codigo: q.codigoQuarto,
         revisor: q.revisor || 'N/A'
       };
     });

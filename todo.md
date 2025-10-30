@@ -84,3 +84,9 @@
 
 - [x] TypeError: Cannot read properties of undefined (reading 'getTime') - erro ao carregar gráfico quando dataHora é undefined
 
+
+
+## Bug - Gráfico de Precisão Não Aparece
+
+- [x] Gráfico de precisão não está sendo exibido no dashboard após correção de validação - corrigido para usar dataRegistro ao invés de dataHora
+
