@@ -69,3 +69,12 @@
 - [x] Criar gráfico de curvas elegante mostrando evolução do percentual de precisão dos quartos ao longo do tempo
 - [x] Posicionar abaixo do gráfico de produção diária x metas
 
+
+
+## Bugs do Gráfico de Precisão
+
+- [x] Datas aparecem como "Invalid Date" no eixo X e no tooltip
+- [x] Média geral aparece como "NaN%"
+- [x] Tooltip não mostra o nome do revisor
+- [x] Código do quarto não aparece corretamente no tooltip
+

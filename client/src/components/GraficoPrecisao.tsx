@@ -5,8 +5,9 @@ import { TrendingUp } from "lucide-react";
 interface Quarto {
   id: string;
   codigo: string;
-  dataHora: Date;
+  dataHora: Date | string;
   taxaPrecisao?: number | null;
+  revisor?: string | null;
 }
 
 interface GraficoPrecisaoProps {
@@ -17,12 +18,21 @@ export function GraficoPrecisao({ quartos }: GraficoPrecisaoProps) {
   // Filtrar apenas quartos com taxa de precisão e agrupar por data
   const dadosPrecisao = quartos
     .filter(q => q.taxaPrecisao !== null && q.taxaPrecisao !== undefined)
-    .sort((a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime())
-    .map(q => ({
-      data: new Date(q.dataHora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-      precisao: q.taxaPrecisao,
-      codigo: q.codigo
-    }));
+    .sort((a, b) => {
+      const dateA = typeof a.dataHora === 'string' ? new Date(a.dataHora) : a.dataHora;
+      const dateB = typeof b.dataHora === 'string' ? new Date(b.dataHora) : b.dataHora;
+      return dateA.getTime() - dateB.getTime();
+    })
+    .map(q => {
+      const date = typeof q.dataHora === 'string' ? new Date(q.dataHora) : q.dataHora;
+      return {
+        data: date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        dataCompleta: date.toLocaleDateString('pt-BR'),
+        precisao: q.taxaPrecisao,
+        codigo: q.codigo,
+        revisor: q.revisor || 'N/A'
+      };
+    });
 
   if (dadosPrecisao.length === 0) {
     return null;
@@ -69,14 +79,14 @@ export function GraficoPrecisao({ quartos }: GraficoPrecisaoProps) {
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   return (
-                    <div className="rounded-lg border bg-background p-2 shadow-sm">
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-lg border bg-background p-3 shadow-sm">
+                      <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col">
                           <span className="text-[0.70rem] uppercase text-muted-foreground">
                             Data
                           </span>
                           <span className="font-bold text-muted-foreground">
-                            {payload[0].payload.data}
+                            {payload[0].payload.dataCompleta}
                           </span>
                         </div>
                         <div className="flex flex-col">
@@ -89,9 +99,17 @@ export function GraficoPrecisao({ quartos }: GraficoPrecisaoProps) {
                         </div>
                         <div className="flex flex-col col-span-2">
                           <span className="text-[0.70rem] uppercase text-muted-foreground">
+                            Revisor
+                          </span>
+                          <span className="font-bold text-blue-600">
+                            {payload[0].payload.revisor}
+                          </span>
+                        </div>
+                        <div className="flex flex-col col-span-2">
+                          <span className="text-[0.70rem] uppercase text-muted-foreground">
                             Precisão
                           </span>
-                          <span className="font-bold text-purple-600">
+                          <span className="font-bold text-purple-600 text-lg">
                             {payload[0].value}%
                           </span>
                         </div>
