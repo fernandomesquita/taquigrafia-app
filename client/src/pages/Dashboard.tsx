@@ -147,7 +147,7 @@ export default function Dashboard() {
   });
 
   // Cálculos
-  const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, diasUteisRestantes, mediaNecessaria, quartosAgrupados, trabalhoHoje, dadosGrafico, dadosDificuldade, percentualRevisados } = useMemo(() => {
+  const { totalQuartos, totalMinutos, metaMensal, saldo, diasUteis, diasUteisRestantes, mediaNecessaria, quartosAgrupados, trabalhoHoje, dadosGrafico, dadosDificuldade, percentualRevisados, revisoresUnicos } = useMemo(() => {
     const total = quartos.length; // cada registro = 1 quarto
     const minutos = total * 4;
 

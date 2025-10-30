@@ -43,3 +43,9 @@
 - [x] Adicionar footer com "Desenvolvido por Fernando Mesquita" e informações de versionamento
 - [x] Esticar verticalmente o painel de "Registros do Mês" para alinhar com os cards da direita
 
+
+
+## Bug Crítico
+
+- [x] ReferenceError: revisoresUnicos is not defined - erro ao tentar adicionar revisor
+
