@@ -114,3 +114,17 @@
   - Quartos registrados / Quartos restantes
   - Taxa média de precisão
 
+
+
+## Novas Melhorias Solicitadas
+
+- [x] Adicionar seletor de mês/ano no painel "Registros do Mês"
+- [x] Adicionar filtro de período (mês específico ou global) nas estatísticas por revisor
+- [x] Adicionar filtro de período (mês específico ou global) no gráfico de evolução da precisão
+- [x] Corrigir bug: data do último backup não está atualizando corretamente
+- [x] Adicionar botão "Dispensar" no alerta de fim de mês para backup/relatório
+- [x] Expandir box de estatísticas compiladas para mostrar:
+  - Precisão média do mês atual
+  - Precisão média global (todos os meses)
+  - Total de quartos registrados (todos os tempos)
+

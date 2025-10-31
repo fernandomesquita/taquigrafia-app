@@ -1,19 +1,35 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Calendar, Download, Database } from "lucide-react";
+import { Calendar, Download, Database, X } from "lucide-react";
 import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
 
 export function LembreteFimMes() {
   const [, setLocation] = useLocation();
+  const [dispensado, setDispensado] = useState(false);
   
   // Verificar se é o último dia do mês
   const hoje = new Date();
   const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
   const diaAtual = hoje.getDate();
+  const mesAno = `${hoje.getFullYear()}-${hoje.getMonth() + 1}`;
   
   const isUltimoDia = diaAtual === ultimoDiaMes;
   
-  if (!isUltimoDia) {
+  // Verificar se foi dispensado neste mês
+  useEffect(() => {
+    const dispensadoStorage = localStorage.getItem(`lembrete-dispensado-${mesAno}`);
+    if (dispensadoStorage === 'true') {
+      setDispensado(true);
+    }
+  }, [mesAno]);
+  
+  const handleDispensar = () => {
+    localStorage.setItem(`lembrete-dispensado-${mesAno}`, 'true');
+    setDispensado(true);
+  };
+  
+  if (!isUltimoDia || dispensado) {
     return null;
   }
 
@@ -27,7 +43,7 @@ export function LembreteFimMes() {
         <p className="text-orange-800">
           Não esqueça de exportar o <strong>backup</strong> e o <strong>relatório mensal</strong> antes que o mês termine!
         </p>
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-3 flex-wrap items-center">
           <Button
             onClick={() => setLocation("/backup")}
             className="bg-blue-600 hover:bg-blue-700"
@@ -43,6 +59,15 @@ export function LembreteFimMes() {
           >
             <Download className="h-4 w-4 mr-2" />
             Exportar Relatório
+          </Button>
+          <Button
+            onClick={handleDispensar}
+            variant="outline"
+            size="sm"
+            className="border-orange-300 text-orange-700 hover:bg-orange-100"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Dispensar
           </Button>
         </div>
       </AlertDescription>

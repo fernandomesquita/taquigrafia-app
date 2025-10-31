@@ -50,6 +50,12 @@ export default function Dashboard() {
     { enabled: isAuthenticated }
   );
 
+  // Buscar TODOS os quartos para estatísticas globais
+  const { data: todosQuartos = [] } = trpc.quartos.list.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
   const { data: metas = [], isLoading: loadingMetas } = trpc.metas.listByMonth.useQuery(
     { year: selectedYear, month: selectedMonth },
     { enabled: isAuthenticated }
@@ -436,24 +442,56 @@ export default function Dashboard() {
 
           {/* Card de Estatísticas Compiladas */}
           <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-            <CardContent className="flex flex-col justify-center h-full py-6 space-y-4">
+            <CardContent className="flex flex-col justify-center h-full py-6 space-y-3">
+              {/* Progresso do Mês */}
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">Progresso</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-xs text-muted-foreground mb-1">Progresso do Mês</p>
+                <p className="text-xl font-bold text-blue-600">
                   {totalQuartos} / {metaMensal}
                 </p>
                 <p className="text-xs text-muted-foreground">quartos</p>
               </div>
-              <div className="border-t border-blue-200 pt-3 text-center">
-                <p className="text-sm text-muted-foreground mb-1">Precisão Média</p>
-                <p className="text-2xl font-bold text-indigo-600">
+              
+              <div className="border-t border-blue-200" />
+              
+              {/* Precisão Média do Mês */}
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Precisão Mês</p>
+                <p className="text-xl font-bold text-indigo-600">
                   {quartosComPrecisao.length > 0
                     ? `${(quartosComPrecisao.reduce((sum, q) => sum + parseFloat(q.taxaPrecisao || '0'), 0) / quartosComPrecisao.length).toFixed(1)}%`
                     : '-'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {quartosComPrecisao.length > 0 ? `${quartosComPrecisao.length} quartos` : 'sem dados'}
+                  {quartosComPrecisao.length > 0 ? `${quartosComPrecisao.length} comparados` : 'sem dados'}
                 </p>
+              </div>
+              
+              <div className="border-t border-blue-200" />
+              
+              {/* Precisão Global */}
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Precisão Global</p>
+                <p className="text-xl font-bold text-purple-600">
+                  {(() => {
+                    const todosComPrecisao = todosQuartos.filter(q => q.taxaPrecisao);
+                    return todosComPrecisao.length > 0
+                      ? `${(todosComPrecisao.reduce((sum, q) => sum + parseFloat(q.taxaPrecisao || '0'), 0) / todosComPrecisao.length).toFixed(1)}%`
+                      : '-';
+                  })()}
+                </p>
+                <p className="text-xs text-muted-foreground">todos os tempos</p>
+              </div>
+              
+              <div className="border-t border-blue-200" />
+              
+              {/* Total Global de Quartos */}
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Total Registrado</p>
+                <p className="text-xl font-bold text-green-600">
+                  {todosQuartos.length}
+                </p>
+                <p className="text-xs text-muted-foreground">quartos (global)</p>
               </div>
             </CardContent>
           </Card>
@@ -686,6 +724,8 @@ export default function Dashboard() {
         {/* Gráfico de Precisão */}
         <GraficoPrecisao 
           quartos={quartos} 
+          mesAtual={selectedMonth}
+          anoAtual={selectedYear}
           onQuartoClick={(quartoId) => {
             const quarto = quartos.find(q => q.id === quartoId);
             if (quarto) {
@@ -699,10 +739,38 @@ export default function Dashboard() {
           {/* Lista de Registros */}
           <Card className="flex flex-col h-full">
             <CardHeader>
-              <CardTitle>Registros do Mês</CardTitle>
-              <CardDescription>
-                {quartos.length} {quartos.length === 1 ? "registro" : "registros"}
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Registros do Mês</CardTitle>
+                  <CardDescription>
+                    {quartos.length} {quartos.length === 1 ? "registro" : "registros"}
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <div>
+                    <Label className="text-xs">Mês</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="12"
+                      value={selectedMonth}
+                      onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                      className="w-20"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Ano</Label>
+                    <Input
+                      type="number"
+                      min="2020"
+                      max="2030"
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                      className="w-24"
+                    />
+                  </div>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col">
               {loadingQuartos ? (
@@ -989,7 +1057,7 @@ export default function Dashboard() {
 
             {/* Coluna Direita: Estatística por Revisor */}
             <div>
-              <EstatisticaRevisor quartos={quartos} />
+              <EstatisticaRevisor quartos={quartos} mesAtual={selectedMonth} anoAtual={selectedYear} />
             </div>
           </div>
         </div>

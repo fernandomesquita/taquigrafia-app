@@ -1,11 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 interface EstatisticaRevisorProps {
   quartos: any[];
+  mesAtual: number;
+  anoAtual: number;
 }
 
-export function EstatisticaRevisor({ quartos }: EstatisticaRevisorProps) {
+export function EstatisticaRevisor({ quartos, mesAtual, anoAtual }: EstatisticaRevisorProps) {
+  const [filtroMes, setFiltroMes] = useState<string>("mes-atual");
   // Paleta de cores para revisores
   const coresRevisores = [
     { bg: "bg-purple-100", text: "text-purple-700", badge: "text-purple-600" },
@@ -18,8 +23,21 @@ export function EstatisticaRevisor({ quartos }: EstatisticaRevisorProps) {
     { bg: "bg-red-100", text: "text-red-700", badge: "text-red-600" },
   ];
 
+  // Filtrar quartos por período
+  let quartosFiltrados = quartos;
+  if (filtroMes === "mes-atual") {
+    quartosFiltrados = quartos.filter((q) => {
+      const dataQuarto = new Date(q.dataRegistro);
+      return (
+        dataQuarto.getMonth() + 1 === mesAtual &&
+        dataQuarto.getFullYear() === anoAtual
+      );
+    });
+  }
+  // Se filtroMes === "global", usa todos os quartos
+
   // Filtrar apenas quartos revisados com revisor e taxa de precisão
-  const quartosRevisados = quartos.filter(
+  const quartosRevisados = quartosFiltrados.filter(
     (q) => q.revisado && q.revisor && q.taxaPrecisao
   );
 
@@ -56,12 +74,25 @@ export function EstatisticaRevisor({ quartos }: EstatisticaRevisorProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          📊 Estatística por Revisor
-        </CardTitle>
-        <CardDescription>
-          Média de precisão por revisor
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              📊 Estatística por Revisor
+            </CardTitle>
+            <CardDescription>
+              Média de precisão por revisor
+            </CardDescription>
+          </div>
+          <Select value={filtroMes} onValueChange={setFiltroMes}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mes-atual">Mês Atual</SelectItem>
+              <SelectItem value="global">Global</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
         {/* Tabela de Revisores */}

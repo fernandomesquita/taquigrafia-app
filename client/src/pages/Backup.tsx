@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Download, Upload, AlertCircle, CheckCircle2, Info, FileDown, Database, Clock } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,12 +26,14 @@ export default function Backup() {
   const [backupPreview, setBackupPreview] = useState<any>(null);
   
   // Histórico de backups do localStorage
-  const [lastDownloadDate, setLastDownloadDate] = useState<string | null>(
-    localStorage.getItem("lastBackupDownload")
-  );
-  const [lastRestoreDate, setLastRestoreDate] = useState<string | null>(
-    localStorage.getItem("lastBackupRestore")
-  );
+  const [lastDownloadDate, setLastDownloadDate] = useState<string | null>(null);
+  const [lastRestoreDate, setLastRestoreDate] = useState<string | null>(null);
+
+  // Carregar datas do localStorage no mount
+  useEffect(() => {
+    setLastDownloadDate(localStorage.getItem("lastBackupDownload"));
+    setLastRestoreDate(localStorage.getItem("lastBackupRestore"));
+  }, []);
 
   const utils = trpc.useUtils();
 

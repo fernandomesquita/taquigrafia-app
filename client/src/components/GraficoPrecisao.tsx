@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scatter, ScatterChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ZAxis } from "recharts";
 import { TrendingUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 interface Quarto {
   id: string;
@@ -13,6 +15,8 @@ interface Quarto {
 interface GraficoPrecisaoProps {
   quartos: Quarto[];
   onQuartoClick?: (quartoId: string) => void;
+  mesAtual: number;
+  anoAtual: number;
 }
 
 // Paleta de cores para revisores (mesma do EstatisticaRevisor)
@@ -27,9 +31,23 @@ const coresRevisores = [
   "#dc2626", // red-600
 ];
 
-export function GraficoPrecisao({ quartos, onQuartoClick }: GraficoPrecisaoProps) {
+export function GraficoPrecisao({ quartos, onQuartoClick, mesAtual, anoAtual }: GraficoPrecisaoProps) {
+  const [filtroMes, setFiltroMes] = useState<string>("mes-atual");
+  // Filtrar quartos por período
+  let quartosFiltrados = quartos;
+  if (filtroMes === "mes-atual") {
+    quartosFiltrados = quartos.filter((q) => {
+      const dataQuarto = new Date(q.dataRegistro);
+      return (
+        dataQuarto.getMonth() + 1 === mesAtual &&
+        dataQuarto.getFullYear() === anoAtual
+      );
+    });
+  }
+  // Se filtroMes === "global", usa todos os quartos
+
   // Filtrar apenas quartos com taxa de precisão e dataRegistro válida
-  const quartosComPrecisao = quartos.filter(q => 
+  const quartosComPrecisao = quartosFiltrados.filter(q => 
     q.taxaPrecisao !== null && 
     q.taxaPrecisao !== undefined &&
     q.taxaPrecisao !== '' &&
@@ -84,7 +102,7 @@ export function GraficoPrecisao({ quartos, onQuartoClick }: GraficoPrecisaoProps
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-purple-600" />
@@ -94,9 +112,20 @@ export function GraficoPrecisao({ quartos, onQuartoClick }: GraficoPrecisaoProps
               Taxa de precisão dos quartos ao longo do tempo (clique para ver detalhes)
             </CardDescription>
           </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-purple-600">{mediaPrecisao.toFixed(1)}%</p>
-            <p className="text-sm text-muted-foreground">Média geral</p>
+          <div className="flex items-center gap-4">
+            <Select value={filtroMes} onValueChange={setFiltroMes}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mes-atual">Mês Atual</SelectItem>
+                <SelectItem value="global">Global</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-purple-600">{mediaPrecisao.toFixed(1)}%</p>
+              <p className="text-sm text-muted-foreground">Média geral</p>
+            </div>
           </div>
         </div>
       </CardHeader>
