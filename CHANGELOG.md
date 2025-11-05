@@ -5,6 +5,13 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.4.2] - 2025-11-05
+
+### Corrigido
+- **Bug Crítico do Filtro Global**: Corrigido problema onde o filtro "Global" nas estatísticas não mostrava dados de todos os quartos
+- **Causa Raiz**: Variável `todosQuartos.data` estava sendo passada para os componentes, mas `todosQuartos` já é o array de dados (não possui propriedade `.data`)
+- **Impacto**: Componentes "Estatística por Revisor" e "Evolução da Precisão" agora exibem corretamente os dados de todos os meses ao selecionar "Global"
+
 ## [1.4.1] - 2025-11-05
 
 ### Corrigido
