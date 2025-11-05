@@ -57,6 +57,11 @@ export default function Dashboard() {
     { enabled: isAuthenticated }
   );
 
+  // 🔍 LOG DE DIAGNÓSTICO - REMOVER DEPOIS
+  console.log('📊 [DIAGNÓSTICO] Total de quartos carregados (todosQuartos):', todosQuartos.length);
+  console.log('📊 [DIAGNÓSTICO] Primeiros 3 quartos:', todosQuartos.slice(0, 3));
+  console.log('📊 [DIAGNÓSTICO] Quartos com precisão:', todosQuartos.filter(q => q.taxaPrecisao).length);
+
   const { data: metas = [], isLoading: loadingMetas } = trpc.metas.listByMonth.useQuery(
     { year: selectedYear, month: selectedMonth },
     { enabled: isAuthenticated }

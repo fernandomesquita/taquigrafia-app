@@ -182,3 +182,12 @@
 - [ ] Verificar se o ambiente de desenvolvimento está usando o banco correto
 - [ ] Atualizar DATABASE_URL se necessário para usar o banco de produção
 
+
+
+
+## Bug: Mensagem Incorreta ao Selecionar Global
+
+- [ ] Investigar por que aparece "Nenhum quarto revisado com taxa de precisão registrada" quando existem 52 quartos no mês 10/2025
+- [ ] Verificar se a filtragem está correta ao usar filtro Global
+- [ ] Corrigir lógica de filtragem se necessário
+

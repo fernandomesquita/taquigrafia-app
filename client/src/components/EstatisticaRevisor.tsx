@@ -37,12 +37,22 @@ export function EstatisticaRevisor({ quartos, todosQuartos, mesAtual, anoAtual }
   } else if (filtroMes === "global") {
     // Usar todosQuartos quando Global estiver selecionado
     quartosFiltrados = todosQuartos;
+    // 🔍 LOG DE DIAGNÓSTICO
+    console.log('📊 [EstatisticaRevisor] Filtro Global selecionado');
+    console.log('📊 [EstatisticaRevisor] todosQuartos recebidos:', todosQuartos.length);
   }
 
   // Filtrar apenas quartos revisados com revisor e taxa de precisão
   const quartosRevisados = quartosFiltrados.filter(
     (q) => q.revisado && q.revisor && q.taxaPrecisao
   );
+
+  // 🔍 LOG DE DIAGNÓSTICO
+  console.log('📊 [EstatisticaRevisor] Quartos filtrados:', quartosFiltrados.length);
+  console.log('📊 [EstatisticaRevisor] Quartos revisados com precisão:', quartosRevisados.length);
+  if (quartosRevisados.length > 0) {
+    console.log('📊 [EstatisticaRevisor] Exemplo de quarto revisado:', quartosRevisados[0]);
+  }
 
   // Agrupar por revisor
   const estatisticasPorRevisor = quartosRevisados.reduce((acc, quarto) => {
