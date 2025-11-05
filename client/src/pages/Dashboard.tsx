@@ -34,8 +34,9 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [quantidade, setQuantidade] = useState("");
   const [observacao, setObservacao] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+  const [filtroStatus, setFiltroStatus] = useState<'todos' | 'pendentes' | 'nao-revisados' | 'revisados'>('todos');
   const [quartoRevisandoId, setQuartoRevisandoId] = useState<string | null>(null);
   const [quartoComparacaoId, setQuartoComparacaoId] = useState<string | null>(null);
   const [observacoesRevisao, setObservacoesRevisao] = useState("");
@@ -219,8 +220,18 @@ export default function Dashboard() {
     const quartosRestantes = metaMensal - total;
     const mediaNecessaria = diasUteisRestantes > 0 ? quartosRestantes / diasUteisRestantes : 0;
 
+    // Filtrar quartos por status
+    let quartosFiltrados = quartos;
+    if (filtroStatus === 'pendentes') {
+      quartosFiltrados = quartos.filter(q => q.status === 'pendente');
+    } else if (filtroStatus === 'nao-revisados') {
+      quartosFiltrados = quartos.filter(q => !q.revisado);
+    } else if (filtroStatus === 'revisados') {
+      quartosFiltrados = quartos.filter(q => q.revisado);
+    }
+
     // Agrupar quartos por data e ordenar por ordem
-    const agrupados = quartos.reduce((acc, quarto) => {
+    const agrupados = quartosFiltrados.reduce((acc, quarto) => {
       const data = new Date(quarto.dataRegistro).toLocaleDateString("pt-BR");
       if (!acc[data]) {
         acc[data] = [];
@@ -340,7 +351,7 @@ export default function Dashboard() {
       revisoresUnicos,
       quartosComPrecisao,
     };
-  }, [quartos, metas, selectedMonth, selectedYear]);
+  }, [quartos, metas, selectedMonth, selectedYear, filtroStatus]);
 
   if (loading) {
     return (
@@ -452,6 +463,9 @@ export default function Dashboard() {
               </p>
               <p className="text-lg text-muted-foreground mt-2">DIAS</p>
               <p className="text-sm text-muted-foreground mt-1">para acabar o mês</p>
+              <p className="text-base font-bold text-orange-700 mt-2">
+                {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('pt-BR', { month: 'long' }).toUpperCase()}
+              </p>
             </CardContent>
           </Card>
 
@@ -754,36 +768,69 @@ export default function Dashboard() {
           {/* Lista de Registros */}
           <Card className="flex flex-col h-full">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Registros do Mês</CardTitle>
-                  <CardDescription>
-                    {quartos.length} {quartos.length === 1 ? "registro" : "registros"}
-                  </CardDescription>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Registros do Mês</CardTitle>
+                    <CardDescription>
+                      {quartos.length} {quartos.length === 1 ? "registro" : "registros"}
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <div>
+                      <Label className="text-xs">Mês</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="12"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                        className="w-20"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Ano</Label>
+                      <Input
+                        type="number"
+                        min="2020"
+                        max="2030"
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                        className="w-24"
+                      />
+                    </div>
+                  </div>
                 </div>
+                {/* Filtros de Status */}
                 <div className="flex gap-2">
-                  <div>
-                    <Label className="text-xs">Mês</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="12"
-                      value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                      className="w-20"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Ano</Label>
-                    <Input
-                      type="number"
-                      min="2020"
-                      max="2030"
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                      className="w-24"
-                    />
-                  </div>
+                  <Button
+                    variant={filtroStatus === 'todos' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroStatus('todos')}
+                  >
+                    Todos
+                  </Button>
+                  <Button
+                    variant={filtroStatus === 'pendentes' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroStatus('pendentes')}
+                  >
+                    Pendentes
+                  </Button>
+                  <Button
+                    variant={filtroStatus === 'nao-revisados' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroStatus('nao-revisados')}
+                  >
+                    Não Revisados
+                  </Button>
+                  <Button
+                    variant={filtroStatus === 'revisados' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroStatus('revisados')}
+                  >
+                    Revisados
+                  </Button>
                 </div>
               </div>
             </CardHeader>

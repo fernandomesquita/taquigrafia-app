@@ -146,3 +146,10 @@
 - [x] Garantir que quartos novos recebam valor inicial de ordem
 - [x] Testar reordenação funcionando corretamente
 
+
+
+## Filtros de Status e Melhorias Visuais
+
+- [x] Adicionar filtros de status na lista de quartos (Todos, Pendentes, Não Revisados, Revisados)
+- [x] Adicionar nome do mês atual em BOLD abaixo do contador de dias no card "Faltam X DIAS"
+
