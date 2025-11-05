@@ -137,3 +137,12 @@
 - [x] Criar endpoint tRPC para atualizar ordem dos quartos
 - [x] Corrigir lista de revisores para incluir revisores de meses anteriores (buscar todos os revisores únicos do usuário)
 
+
+
+## Bug: Reordenação de Quartos Não Funciona Visualmente
+
+- [x] Investigar por que os quartos não mudam de posição após clicar nas setas
+- [x] Corrigir lógica de reordenação no backend (simplificada para trocar ordens)
+- [x] Garantir que quartos novos recebam valor inicial de ordem
+- [x] Testar reordenação funcionando corretamente
+

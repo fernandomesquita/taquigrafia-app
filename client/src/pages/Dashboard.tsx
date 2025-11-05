@@ -219,7 +219,7 @@ export default function Dashboard() {
     const quartosRestantes = metaMensal - total;
     const mediaNecessaria = diasUteisRestantes > 0 ? quartosRestantes / diasUteisRestantes : 0;
 
-    // Agrupar quartos por data
+    // Agrupar quartos por data e ordenar por ordem
     const agrupados = quartos.reduce((acc, quarto) => {
       const data = new Date(quarto.dataRegistro).toLocaleDateString("pt-BR");
       if (!acc[data]) {
@@ -228,6 +228,11 @@ export default function Dashboard() {
       acc[data].push(quarto);
       return acc;
     }, {} as Record<string, typeof quartos>);
+    
+    // Ordenar quartos dentro de cada data por ordem
+    Object.keys(agrupados).forEach(data => {
+      agrupados[data].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+    });
 
     // Calcular trabalho de hoje
     const hoje = new Date();
@@ -907,15 +912,11 @@ export default function Dashboard() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => {
-                                  const index = quartosData.findIndex(q => q.id === quarto.id);
-                                  if (index > 0) {
-                                    const quartoAnterior = quartosData[index - 1];
-                                    reordenarQuartos.mutate({
-                                      quartoId: quarto.id,
-                                      novaOrdem: quartoAnterior.ordem || 0,
-                                      data: data
-                                    });
-                                  }
+                                  reordenarQuartos.mutate({
+                                    quartoId: quarto.id,
+                                    direcao: 'up',
+                                    data: data
+                                  });
                                 }}
                                 disabled={reordenarQuartos.isPending || quartosData.findIndex(q => q.id === quarto.id) === 0}
                                 title="Mover para cima"
@@ -927,15 +928,11 @@ export default function Dashboard() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => {
-                                  const index = quartosData.findIndex(q => q.id === quarto.id);
-                                  if (index < quartosData.length - 1) {
-                                    const quartoProximo = quartosData[index + 1];
-                                    reordenarQuartos.mutate({
-                                      quartoId: quarto.id,
-                                      novaOrdem: quartoProximo.ordem || 0,
-                                      data: data
-                                    });
-                                  }
+                                  reordenarQuartos.mutate({
+                                    quartoId: quarto.id,
+                                    direcao: 'down',
+                                    data: data
+                                  });
                                 }}
                                 disabled={reordenarQuartos.isPending || quartosData.findIndex(q => q.id === quarto.id) === quartosData.length - 1}
                                 title="Mover para baixo"

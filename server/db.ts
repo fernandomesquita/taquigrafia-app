@@ -158,7 +158,7 @@ export async function updateQuartoStatus(id: string, userId: string, status: "pe
     .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
 }
 
-export async function reordenarQuartos(quartoId: string, userId: string, novaOrdem: number, data: string) {
+export async function reordenarQuartos(quartoId: string, userId: string, direcao: 'up' | 'down', data: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
@@ -177,38 +177,32 @@ export async function reordenarQuartos(quartoId: string, userId: string, novaOrd
     )
     .orderBy(asc(quartos.ordem));
   
-  // Encontrar o quarto que está sendo movido
-  const quartoMovido = quartosDoDia.find(q => q.id === quartoId);
-  if (!quartoMovido) throw new Error("Quarto não encontrado");
+  // Encontrar o índice do quarto que está sendo movido
+  const index = quartosDoDia.findIndex(q => q.id === quartoId);
+  if (index === -1) throw new Error("Quarto não encontrado");
   
-  const ordemAtual = quartoMovido.ordem || 0;
-  
-  // Reordenar: se está movendo para cima (novaOrdem < ordemAtual), incrementar os quartos entre novaOrdem e ordemAtual
-  // Se está movendo para baixo (novaOrdem > ordemAtual), decrementar os quartos entre ordemAtual e novaOrdem
-  if (novaOrdem < ordemAtual) {
-    // Movendo para cima: incrementar quartos entre novaOrdem e ordemAtual
-    for (const q of quartosDoDia) {
-      if (q.id !== quartoId && (q.ordem || 0) >= novaOrdem && (q.ordem || 0) < ordemAtual) {
-        await db.update(quartos)
-          .set({ ordem: (q.ordem || 0) + 1 })
-          .where(eq(quartos.id, q.id));
-      }
-    }
-  } else if (novaOrdem > ordemAtual) {
-    // Movendo para baixo: decrementar quartos entre ordemAtual e novaOrdem
-    for (const q of quartosDoDia) {
-      if (q.id !== quartoId && (q.ordem || 0) > ordemAtual && (q.ordem || 0) <= novaOrdem) {
-        await db.update(quartos)
-          .set({ ordem: (q.ordem || 0) - 1 })
-          .where(eq(quartos.id, q.id));
-      }
-    }
+  // Determinar o quarto com o qual trocar
+  let indexTroca: number;
+  if (direcao === 'up') {
+    if (index === 0) return; // Já está no topo
+    indexTroca = index - 1;
+  } else {
+    if (index === quartosDoDia.length - 1) return; // Já está no final
+    indexTroca = index + 1;
   }
   
-  // Atualizar a ordem do quarto movido
+  const quartoAtual = quartosDoDia[index];
+  const quartoTroca = quartosDoDia[indexTroca];
+  
+  // Trocar as ordens
+  const ordemTemp = quartoAtual.ordem || 0;
   await db.update(quartos)
-    .set({ ordem: novaOrdem })
-    .where(eq(quartos.id, quartoId));
+    .set({ ordem: quartoTroca.ordem || 0 })
+    .where(eq(quartos.id, quartoAtual.id));
+  
+  await db.update(quartos)
+    .set({ ordem: ordemTemp })
+    .where(eq(quartos.id, quartoTroca.id));
 }
 
 export async function updateQuarto(id: string, userId: string, updates: {

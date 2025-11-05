@@ -22,6 +22,13 @@ export const appRouter = router({
         // Processar códigos separados por vírgula
         const codigosArray = input.codigos.split(',').map(c => c.trim()).filter(c => c.length > 0);
         
+        // Buscar a maior ordem do dia atual para definir ordem inicial
+        const hoje = new Date();
+        const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
+        const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
+        const quartosHoje = await db.getQuartosByUserIdAndDateRange(ctx.user.id, inicioHoje, fimHoje);
+        let maxOrdem = quartosHoje.length > 0 ? Math.max(...quartosHoje.map(q => q.ordem || 0)) : 0;
+        
         const quartosCreated = [];
         for (const codigo of codigosArray) {
           // Validar formato sessão-quarto
@@ -32,6 +39,9 @@ export const appRouter = router({
           
           const [_, sessao, numeroQuarto] = match;
           
+          // Incrementar ordem para cada novo quarto
+          maxOrdem++;
+          
           const quarto = await db.createQuarto({
             id: randomUUID(),
             userId: ctx.user.id,
@@ -40,6 +50,7 @@ export const appRouter = router({
             numeroQuarto,
             observacao: input.observacao,
             dataRegistro: new Date(),
+            ordem: maxOrdem,
           });
           quartosCreated.push(quarto);
         }
@@ -104,11 +115,11 @@ export const appRouter = router({
     reordenar: protectedProcedure
       .input(z.object({
         quartoId: z.string(),
-        novaOrdem: z.number(),
+        direcao: z.enum(['up', 'down']),
         data: z.string(), // data no formato DD/MM/YYYY
       }))
       .mutation(async ({ ctx, input }) => {
-        await db.reordenarQuartos(input.quartoId, ctx.user.id, input.novaOrdem, input.data);
+        await db.reordenarQuartos(input.quartoId, ctx.user.id, input.direcao, input.data);
         return { success: true };
       }),
 
