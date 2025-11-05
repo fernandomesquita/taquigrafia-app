@@ -57,11 +57,6 @@ export default function Dashboard() {
     { enabled: isAuthenticated }
   );
 
-  // 🔍 LOG DE DIAGNÓSTICO - REMOVER DEPOIS
-  console.log('📊 [DIAGNÓSTICO] Total de quartos carregados (todosQuartos):', todosQuartos.length);
-  console.log('📊 [DIAGNÓSTICO] Primeiros 3 quartos:', todosQuartos.slice(0, 3));
-  console.log('📊 [DIAGNÓSTICO] Quartos com precisão:', todosQuartos.filter(q => q.taxaPrecisao).length);
-
   const { data: metas = [], isLoading: loadingMetas } = trpc.metas.listByMonth.useQuery(
     { year: selectedYear, month: selectedMonth },
     { enabled: isAuthenticated }
@@ -758,7 +753,7 @@ export default function Dashboard() {
         {/* Gráfico de Precisão */}
         <GraficoPrecisao 
           quartos={quartos} 
-          todosQuartos={todosQuartos.data || []}
+          todosQuartos={todosQuartos}
           mesAtual={selectedMonth}
           anoAtual={selectedYear}
           onQuartoClick={(quartoId) => {
@@ -1160,7 +1155,7 @@ export default function Dashboard() {
 
             {/* Coluna Direita: Estatística por Revisor */}
             <div>
-              <EstatisticaRevisor quartos={quartos} todosQuartos={todosQuartos.data || []} mesAtual={selectedMonth} anoAtual={selectedYear} />
+              <EstatisticaRevisor quartos={quartos} todosQuartos={todosQuartos} mesAtual={selectedMonth} anoAtual={selectedYear} />
             </div>
           </div>
         </div>

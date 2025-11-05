@@ -187,7 +187,7 @@
 
 ## Bug: Mensagem Incorreta ao Selecionar Global
 
-- [ ] Investigar por que aparece "Nenhum quarto revisado com taxa de precisão registrada" quando existem 52 quartos no mês 10/2025
-- [ ] Verificar se a filtragem está correta ao usar filtro Global
-- [ ] Corrigir lógica de filtragem se necessário
+- [x] Investigar por que aparece "Nenhum quarto revisado com taxa de precisão registrada" quando existem 52 quartos no mês 10/2025
+- [x] Verificar se a filtragem está correta ao usar filtro Global
+- [x] Corrigir lógica de filtragem se necessário - BUG: todosQuartos.data deveria ser apenas todosQuartos
 
