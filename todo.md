@@ -169,3 +169,16 @@
 - [x] Corrigir lógica para buscar todos os quartos quando "Global" estiver selecionado (EstatisticaRevisor e GraficoPrecisao)
 - [x] Testar filtro Global funcionando corretamente (implementação verificada no código)
 
+
+
+## Bug: Boxes Desaparecem ao Clicar em Global
+
+- [x] Investigar por que os boxes de estatística por revisor e evolução da precisão desaparecem ao clicar em "Global"
+- [x] Corrigir lógica de renderização condicional dos componentes
+- [x] Testar filtro Global funcionando sem desaparecer boxes
+
+## Configuração do Banco de Dados
+
+- [ ] Verificar se o ambiente de desenvolvimento está usando o banco correto
+- [ ] Atualizar DATABASE_URL se necessário para usar o banco de produção
+

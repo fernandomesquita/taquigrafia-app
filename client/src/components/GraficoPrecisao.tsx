@@ -61,7 +61,37 @@ export function GraficoPrecisao({ quartos, todosQuartos, onQuartoClick, mesAtual
   );
 
   if (quartosComPrecisao.length === 0) {
-    return null;
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-purple-600" />
+                Evolução da Precisão
+              </CardTitle>
+              <CardDescription>
+                Taxa de precisão dos quartos ao longo do tempo (clique para ver detalhes)
+              </CardDescription>
+            </div>
+            <Select value={filtroMes} onValueChange={setFiltroMes}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mes-atual">Mês Atual</SelectItem>
+                <SelectItem value="global">Global</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground text-center py-8">
+            Nenhum quarto revisado com taxa de precisão registrada
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   // Criar mapeamento de revisor → índice de cor
