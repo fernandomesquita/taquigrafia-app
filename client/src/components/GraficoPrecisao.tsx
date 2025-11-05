@@ -14,6 +14,7 @@ interface Quarto {
 
 interface GraficoPrecisaoProps {
   quartos: Quarto[];
+  todosQuartos: Quarto[];
   onQuartoClick?: (quartoId: string) => void;
   mesAtual: number;
   anoAtual: number;
@@ -31,7 +32,7 @@ const coresRevisores = [
   "#dc2626", // red-600
 ];
 
-export function GraficoPrecisao({ quartos, onQuartoClick, mesAtual, anoAtual }: GraficoPrecisaoProps) {
+export function GraficoPrecisao({ quartos, todosQuartos, onQuartoClick, mesAtual, anoAtual }: GraficoPrecisaoProps) {
   const [filtroMes, setFiltroMes] = useState<string>("mes-atual");
   // Filtrar quartos por período
   let quartosFiltrados = quartos;
@@ -43,8 +44,10 @@ export function GraficoPrecisao({ quartos, onQuartoClick, mesAtual, anoAtual }: 
         dataQuarto.getFullYear() === anoAtual
       );
     });
+  } else if (filtroMes === "global") {
+    // Usar todosQuartos quando Global estiver selecionado
+    quartosFiltrados = todosQuartos;
   }
-  // Se filtroMes === "global", usa todos os quartos
 
   // Filtrar apenas quartos com taxa de precisão e dataRegistro válida
   const quartosComPrecisao = quartosFiltrados.filter(q => 

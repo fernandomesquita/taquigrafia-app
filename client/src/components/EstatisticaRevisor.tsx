@@ -5,11 +5,12 @@ import { useState } from "react";
 
 interface EstatisticaRevisorProps {
   quartos: any[];
+  todosQuartos: any[];
   mesAtual: number;
   anoAtual: number;
 }
 
-export function EstatisticaRevisor({ quartos, mesAtual, anoAtual }: EstatisticaRevisorProps) {
+export function EstatisticaRevisor({ quartos, todosQuartos, mesAtual, anoAtual }: EstatisticaRevisorProps) {
   const [filtroMes, setFiltroMes] = useState<string>("mes-atual");
   // Paleta de cores para revisores
   const coresRevisores = [
@@ -33,8 +34,10 @@ export function EstatisticaRevisor({ quartos, mesAtual, anoAtual }: EstatisticaR
         dataQuarto.getFullYear() === anoAtual
       );
     });
+  } else if (filtroMes === "global") {
+    // Usar todosQuartos quando Global estiver selecionado
+    quartosFiltrados = todosQuartos;
   }
-  // Se filtroMes === "global", usa todos os quartos
 
   // Filtrar apenas quartos revisados com revisor e taxa de precisão
   const quartosRevisados = quartosFiltrados.filter(

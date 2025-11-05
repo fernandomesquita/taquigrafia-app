@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, codigoQuarto, DATE_FORMAT(dataRegistro, '%d/%m/%Y %H:%i') as data, ordem FROM quartos WHERE YEAR(dataRegistro) = 2025 AND MONTH(dataRegistro) = 11 ORDER BY dataRegistro, ordem LIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3FZ1nxfVKsSpRCQ.root --database FVEpaYxJCyLFdXRTbRBHKh --execute SELECT id, codigoQuarto, DATE_FORMAT(dataRegistro, '%d/%m/%Y %H:%i') as data, ordem FROM quartos WHERE YEAR(dataRegistro) = 2025 AND MONTH(dataRegistro) = 11 ORDER BY dataRegistro, ordem LIMIT 20",
+  "rows": [
+    {
+      "id": "5bbaf7e5-7b9d-47ea-a8f8-24ef81383dc2",
+      "codigoQuarto": "100-3",
+      "data": "05/11/2025 14:01",
+      "ordem": "1"
+    },
+    {
+      "id": "5196b7a7-2dba-4967-bf51-4cfed02dbc82",
+      "codigoQuarto": "100-2",
+      "data": "05/11/2025 14:01",
+      "ordem": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoQuarto\tdata\tordem\n5bbaf7e5-7b9d-47ea-a8f8-24ef81383dc2\t100-3\t05/11/2025 14:01\t1\n5196b7a7-2dba-4967-bf51-4cfed02dbc82\t100-2\t05/11/2025 14:01\t2\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

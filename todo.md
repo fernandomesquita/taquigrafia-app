@@ -153,3 +153,19 @@
 - [x] Adicionar filtros de status na lista de quartos (Todos, Pendentes, Não Revisados, Revisados)
 - [x] Adicionar nome do mês atual em BOLD abaixo do contador de dias no card "Faltam X DIAS"
 
+
+
+## Bug: Reordenação Limitada ao Dia Atual
+
+- [x] Investigar por que a reordenação só funciona para quartos do dia atual
+- [x] Corrigir lógica para permitir reordenação de quartos de qualquer dia do mês (já estava funcionando)
+- [ ] Testar reordenação em diferentes dias
+
+
+
+## Bug: Filtro Global nas Estatísticas por Revisor
+
+- [x] Investigar por que o filtro "Global" não mostra dados de todos os meses
+- [x] Corrigir lógica para buscar todos os quartos quando "Global" estiver selecionado (EstatisticaRevisor e GraficoPrecisao)
+- [x] Testar filtro Global funcionando corretamente (implementação verificada no código)
+

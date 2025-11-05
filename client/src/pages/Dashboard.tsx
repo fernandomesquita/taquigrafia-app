@@ -753,6 +753,7 @@ export default function Dashboard() {
         {/* Gráfico de Precisão */}
         <GraficoPrecisao 
           quartos={quartos} 
+          todosQuartos={todosQuartos.data || []}
           mesAtual={selectedMonth}
           anoAtual={selectedYear}
           onQuartoClick={(quartoId) => {
@@ -1154,7 +1155,7 @@ export default function Dashboard() {
 
             {/* Coluna Direita: Estatística por Revisor */}
             <div>
-              <EstatisticaRevisor quartos={quartos} mesAtual={selectedMonth} anoAtual={selectedYear} />
+              <EstatisticaRevisor quartos={quartos} todosQuartos={todosQuartos.data || []} mesAtual={selectedMonth} anoAtual={selectedYear} />
             </div>
           </div>
         </div>
