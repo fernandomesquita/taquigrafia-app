@@ -5,6 +5,13 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.4.1] - 2025-11-05
+
+### Corrigido
+- **Bug de Componentes Desaparecendo**: Componentes "Estatística por Revisor" e "Evolução da Precisão" agora permanecem visíveis quando o filtro "Global" é selecionado e não há dados de precisão
+- **Mensagem Informativa**: Substituído `return null` por renderização completa do card com mensagem "Nenhum quarto revisado com taxa de precisão registrada"
+- **Usabilidade**: Seletor de período (Mês Atual/Global) permanece sempre acessível, mesmo quando não há dados
+
 ## [1.4.0] - 2025-11-05
 
 ### Adicionado
