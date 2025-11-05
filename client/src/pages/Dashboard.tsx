@@ -131,6 +131,16 @@ export default function Dashboard() {
     },
   });
 
+  const reordenarQuartos = trpc.quartos.reordenar.useMutation({
+    onSuccess: () => {
+      utils.quartos.listByMonth.invalidate();
+      toast.success("Ordem atualizada!");
+    },
+    onError: (error) => {
+      toast.error(`Erro ao reordenar: ${error.message}`);
+    },
+  });
+
   const exportarPDF = trpc.relatorios.exportarPDF.useMutation({
     onSuccess: (data) => {
       // Converter base64 para blob e fazer download
@@ -301,9 +311,9 @@ export default function Dashboard() {
     const totalRevisados = quartos.filter(q => q.revisado).length;
     const percentualRevisados = total > 0 ? (totalRevisados / total) * 100 : 0;
 
-    // Obter lista de revisores únicos
+    // Obter lista de revisores únicos (de TODOS os quartos, não apenas do mês atual)
     const revisoresUnicos = Array.from(
-      new Set(quartos.filter(q => q.revisor).map(q => q.revisor))
+      new Set(todosQuartos.filter(q => q.revisor).map(q => q.revisor))
     ).sort();
 
     // Filtrar quartos com taxa de precisão
@@ -891,6 +901,49 @@ export default function Dashboard() {
                             </div>
                           </div>
                           <div className="flex gap-1">
+                            {/* Botões de Reordenação */}
+                            <div className="flex flex-col gap-0 mr-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const index = quartosData.findIndex(q => q.id === quarto.id);
+                                  if (index > 0) {
+                                    const quartoAnterior = quartosData[index - 1];
+                                    reordenarQuartos.mutate({
+                                      quartoId: quarto.id,
+                                      novaOrdem: quartoAnterior.ordem || 0,
+                                      data: data
+                                    });
+                                  }
+                                }}
+                                disabled={reordenarQuartos.isPending || quartosData.findIndex(q => q.id === quarto.id) === 0}
+                                title="Mover para cima"
+                                className="h-5 px-1 py-0"
+                              >
+                                <span className="text-xs">↑</span>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const index = quartosData.findIndex(q => q.id === quarto.id);
+                                  if (index < quartosData.length - 1) {
+                                    const quartoProximo = quartosData[index + 1];
+                                    reordenarQuartos.mutate({
+                                      quartoId: quarto.id,
+                                      novaOrdem: quartoProximo.ordem || 0,
+                                      data: data
+                                    });
+                                  }
+                                }}
+                                disabled={reordenarQuartos.isPending || quartosData.findIndex(q => q.id === quarto.id) === quartosData.length - 1}
+                                title="Mover para baixo"
+                                className="h-5 px-1 py-0"
+                              >
+                                <span className="text-xs">↓</span>
+                              </Button>
+                            </div>
                             <Button
                               variant="ghost"
                               size="sm"

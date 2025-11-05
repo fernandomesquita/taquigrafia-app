@@ -101,6 +101,17 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    reordenar: protectedProcedure
+      .input(z.object({
+        quartoId: z.string(),
+        novaOrdem: z.number(),
+        data: z.string(), // data no formato DD/MM/YYYY
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.reordenarQuartos(input.quartoId, ctx.user.id, input.novaOrdem, input.data);
+        return { success: true };
+      }),
+
     update: protectedProcedure
       .input(z.object({
         id: z.string(),

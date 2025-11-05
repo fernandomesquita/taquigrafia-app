@@ -128,3 +128,12 @@
   - Precisão média global (todos os meses)
   - Total de quartos registrados (todos os tempos)
 
+
+
+## Reordenação de Quartos e Lista de Revisores
+
+- [x] Adicionar campo `ordem` na tabela de quartos (schema)
+- [x] Implementar setas (↑↓) para reordenar quartos dentro de um mesmo dia
+- [x] Criar endpoint tRPC para atualizar ordem dos quartos
+- [x] Corrigir lista de revisores para incluir revisores de meses anteriores (buscar todos os revisores únicos do usuário)
+

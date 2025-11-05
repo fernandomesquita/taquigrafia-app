@@ -1,0 +1,1 @@
+ALTER TABLE `quartos` ADD `ordem` int DEFAULT 0 NOT NULL;

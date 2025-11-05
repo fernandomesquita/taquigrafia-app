@@ -45,6 +45,7 @@ export const quartos = mysqlTable("quartos", {
   comparacaoRealizada: boolean("comparacaoRealizada").default(false).notNull(), // indica se a comparação foi feita
   taxaPrecisao: varchar("taxaPrecisao", { length: 10 }), // taxa de precisão da taquigrafia (%)
   totalAlteracoes: int("totalAlteracoes").default(0), // número total de alterações
+  ordem: int("ordem").default(0).notNull(), // ordem de exibição dentro do mesmo dia
   createdAt: timestamp("createdAt").defaultNow(),
 });
 

@@ -1,4 +1,4 @@
-import { and, between, desc, eq, sql } from "drizzle-orm";
+import { and, asc, between, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertMetaDiaria, InsertQuarto, InsertUser, metasDiarias, quartos, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -113,7 +113,7 @@ export async function getQuartosByUserIdAndDateRange(userId: string, startDate: 
         between(quartos.dataRegistro, startDate, endDate)
       )
     )
-    .orderBy(desc(quartos.dataRegistro));
+    .orderBy(desc(quartos.dataRegistro), asc(quartos.ordem));
 }
 
 export async function deleteQuarto(id: string, userId: string) {
@@ -156,6 +156,59 @@ export async function updateQuartoStatus(id: string, userId: string, status: "pe
   await db.update(quartos)
     .set({ status })
     .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
+}
+
+export async function reordenarQuartos(quartoId: string, userId: string, novaOrdem: number, data: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Buscar todos os quartos do mesmo dia
+  const [dia, mes, ano] = data.split('/');
+  const dataInicio = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 0, 0, 0);
+  const dataFim = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 23, 59, 59);
+  
+  const quartosDoDia = await db.select().from(quartos)
+    .where(
+      and(
+        eq(quartos.userId, userId),
+        gte(quartos.dataRegistro, dataInicio),
+        lte(quartos.dataRegistro, dataFim)
+      )
+    )
+    .orderBy(asc(quartos.ordem));
+  
+  // Encontrar o quarto que está sendo movido
+  const quartoMovido = quartosDoDia.find(q => q.id === quartoId);
+  if (!quartoMovido) throw new Error("Quarto não encontrado");
+  
+  const ordemAtual = quartoMovido.ordem || 0;
+  
+  // Reordenar: se está movendo para cima (novaOrdem < ordemAtual), incrementar os quartos entre novaOrdem e ordemAtual
+  // Se está movendo para baixo (novaOrdem > ordemAtual), decrementar os quartos entre ordemAtual e novaOrdem
+  if (novaOrdem < ordemAtual) {
+    // Movendo para cima: incrementar quartos entre novaOrdem e ordemAtual
+    for (const q of quartosDoDia) {
+      if (q.id !== quartoId && (q.ordem || 0) >= novaOrdem && (q.ordem || 0) < ordemAtual) {
+        await db.update(quartos)
+          .set({ ordem: (q.ordem || 0) + 1 })
+          .where(eq(quartos.id, q.id));
+      }
+    }
+  } else if (novaOrdem > ordemAtual) {
+    // Movendo para baixo: decrementar quartos entre ordemAtual e novaOrdem
+    for (const q of quartosDoDia) {
+      if (q.id !== quartoId && (q.ordem || 0) > ordemAtual && (q.ordem || 0) <= novaOrdem) {
+        await db.update(quartos)
+          .set({ ordem: (q.ordem || 0) - 1 })
+          .where(eq(quartos.id, q.id));
+      }
+    }
+  }
+  
+  // Atualizar a ordem do quarto movido
+  await db.update(quartos)
+    .set({ ordem: novaOrdem })
+    .where(eq(quartos.id, quartoId));
 }
 
 export async function updateQuarto(id: string, userId: string, updates: {
