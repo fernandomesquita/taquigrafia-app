@@ -218,9 +218,10 @@
 - [x] Reverter função de reordenação para NÃO alterar dataRegistro
 - [x] Usar campo `ordem` para reordenação manual mantendo datas originais
 - [x] Criar endpoint temporário fixDataRegistro para correções manuais
-- [ ] Corrigir quarto 79877-14 para dia 07/11/2025
-- [ ] Corrigir quarto 79877-13 para dia 06/11/2025
-- [ ] Implementar drag and drop para reordenação
+- [x] Corrigir quarto 79877-14 para dia 07/11/2025 (banco de produção Railway)
+- [x] Corrigir quarto 79877-13 para dia 06/11/2025 (banco de produção Railway)
+- [x] Criar documento ERROS_CRITICOS.md com checklist diário
+- [x] Implementar drag and drop para reordenação de quartos (biblioteca @dnd-kit)
 - [ ] Garantir que setas up/down funcionem corretamente
 - [ ] Testar que data/hora original nunca é alterada
 

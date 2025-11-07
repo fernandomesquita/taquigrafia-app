@@ -28,6 +28,9 @@ import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { GraficoPrecisao } from "@/components/GraficoPrecisao";
+import { SortableQuartoItem } from "@/components/SortableQuartoItem";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 export default function Dashboard() {
   const { user, loading, isAuthenticated, logout } = useAuth();
@@ -44,6 +47,40 @@ export default function Dashboard() {
   const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
 
   const utils = trpc.useUtils();
+
+  // Sensores para drag-and-drop
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handler para quando o drag termina
+  const handleDragEnd = (event: DragEndEvent, data: string) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const quartosData = quartosAgrupados[data];
+      const oldIndex = quartosData.findIndex((q) => q.id === active.id);
+      const newIndex = quartosData.findIndex((q) => q.id === over.id);
+
+      // Determinar direção
+      const direcao = newIndex < oldIndex ? 'up' : 'down';
+      
+      // Calcular quantas posições mover
+      const passos = Math.abs(newIndex - oldIndex);
+      
+      // Executar reordenação múltiplas vezes se necessário
+      for (let i = 0; i < passos; i++) {
+        reordenarQuartos.mutate({
+          quartoId: active.id as string,
+          direcao,
+          data
+        });
+      }
+    }
+  };
 
   // Queries
   const { data: quartos = [], isLoading: loadingQuartos } = trpc.quartos.listByMonth.useQuery(
@@ -855,177 +892,44 @@ export default function Dashboard() {
                   {Object.entries(quartosAgrupados).map(([data, quartosData]) => (
                     <div key={data} className="border-l-4 border-blue-500 pl-4">
                       <p className="font-bold text-lg text-gray-800 mb-3 border-b pb-2">{data}</p>
-                      {quartosData.map((quarto) => (
-                        <div
-                          key={quarto.id}
-                          className={`rounded-lg p-3 mb-2 flex items-start justify-between transition-colors ${
-                            quarto.status === "pendente"
-                              ? "bg-yellow-50 border-2 border-yellow-300"
-                              : quarto.revisado 
-                                ? "bg-green-50 border-2 border-green-200" 
-                                : "bg-gray-50"
-                          }`}
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={(event) => handleDragEnd(event, data)}
+                      >
+                        <SortableContext
+                          items={quartosData.map(q => q.id)}
+                          strategy={verticalListSortingStrategy}
                         >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">
-                                {quarto.codigoQuarto}
-                                <span className="text-muted-foreground text-sm ml-2">
-                                  (4 min)
-                                </span>
-                              </p>
-                            </div>
-                            {quarto.observacao && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                <strong>Obs:</strong> {quarto.observacao}
-                              </p>
-                            )}
-                            {quarto.revisado && quarto.observacoesRevisao && (
-                              <p className="text-sm text-green-700 mt-1 bg-green-100 px-2 py-1 rounded">
-                                <strong>✓ Revisão:</strong> {quarto.observacoesRevisao}
-                              </p>
-                            )}
-                            {/* Sinalizadores de Arquivos */}
-                            {(quarto.arquivoTaquigrafia || quarto.arquivoRedacaoFinal) && (
-                              <div className="flex items-center gap-2 mt-2">
-                                {quarto.arquivoTaquigrafia && (
-                                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1">
-                                    📝 Taquigrafia
-                                  </span>
-                                )}
-                                {quarto.arquivoRedacaoFinal && (
-                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded flex items-center gap-1">
-                                    ✅ Redação Final
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            {/* Taxa de Precisão */}
-                            {quarto.comparacaoRealizada && quarto.taxaPrecisao && (
-                              <div className="mt-2 bg-purple-50 border border-purple-200 rounded px-3 py-2">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="text-xs text-muted-foreground">Taxa de Precisão</p>
-                                    <p className="text-xl font-bold text-purple-600">
-                                      {quarto.taxaPrecisao}%
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {quarto.totalAlteracoes} alterações
-                                    </p>
-                                  </div>
-                                  <ComparacaoDocumentos quarto={quarto} mostrarApenasResultado />
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-4 mt-2 flex-wrap">
-                              <p className="text-xs text-muted-foreground">
-                                {new Date(quarto.dataRegistro).toLocaleTimeString("pt-BR")}
-                              </p>
-                              <label className="flex items-center gap-1 text-xs cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={quarto.revisado}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setQuartoRevisandoId(quarto.id);
-                                      setObservacoesRevisao(quarto.observacoesRevisao || "");
-                                    } else {
-                                      updateRevisado.mutate({ 
-                                        id: quarto.id, 
-                                        revisado: false,
-                                        observacoesRevisao: undefined 
-                                      });
-                                    }
-                                  }}
-                                  className="cursor-pointer"
-                                />
-                                <span className={quarto.revisado ? "text-green-600 font-medium" : "text-muted-foreground"}>
-                                  REVISADO
-                                  {quarto.revisado && quarto.revisor && (
-                                    <span className="ml-1 text-xs font-normal">por {quarto.revisor}</span>
-                                  )}
-                                </span>
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">Dificuldade:</span>
-                                <select
-                                  value={quarto.dificuldade}
-                                  onChange={(e) => updateDificuldade.mutate({ id: quarto.id, dificuldade: e.target.value as any })}
-                                  className="text-xs border rounded px-2 py-1 cursor-pointer"
-                                >
-                                  <option value="NA">🔘 NA</option>
-                                  <option value="Facil">🟢 Fácil</option>
-                                  <option value="Medio">🟡 Médio</option>
-                                  <option value="Dificil">🔴 Difícil</option>
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            {/* Botões de Reordenação */}
-                            <div className="flex flex-col gap-0 mr-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  reordenarQuartos.mutate({
-                                    quartoId: quarto.id,
-                                    direcao: 'up',
-                                    data: data
-                                  });
-                                }}
-                                disabled={reordenarQuartos.isPending || quartosData.findIndex(q => q.id === quarto.id) === 0}
-                                title="Mover para cima"
-                                className="h-5 px-1 py-0"
-                              >
-                                <span className="text-xs">↑</span>
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  reordenarQuartos.mutate({
-                                    quartoId: quarto.id,
-                                    direcao: 'down',
-                                    data: data
-                                  });
-                                }}
-                                disabled={reordenarQuartos.isPending || quartosData.findIndex(q => q.id === quarto.id) === quartosData.length - 1}
-                                title="Mover para baixo"
-                                className="h-5 px-1 py-0"
-                              >
-                                <span className="text-xs">↓</span>
-                              </Button>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => updateStatus.mutate({ 
+                          {quartosData.map((quarto) => (
+                            <SortableQuartoItem
+                              key={quarto.id}
+                              quarto={quarto}
+                              onDelete={() => deleteQuarto.mutate({ id: quarto.id })}
+                              onUpdateStatus={() => updateStatus.mutate({ 
                                 id: quarto.id, 
                                 status: quarto.status === "pendente" ? "concluido" : "pendente" 
                               })}
-                              disabled={updateStatus.isPending}
-                              title={quarto.status === "pendente" ? "Marcar como concluído" : "Marcar como pendente"}
-                            >
-                              {quarto.status === "pendente" ? (
-                                <span className="text-yellow-600">⏳</span>
-                              ) : (
-                                <span className="text-green-600">✅</span>
-                              )}
-                            </Button>
-                            <ComparacaoDocumentos quarto={quarto} />
-                            <EditarQuarto quarto={quarto} />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteQuarto.mutate({ id: quarto.id })}
-                              disabled={deleteQuarto.isPending}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                              onUpdateRevisado={(checked) => {
+                                updateRevisado.mutate({ 
+                                  id: quarto.id, 
+                                  revisado: checked,
+                                  observacoesRevisao: checked ? undefined : undefined
+                                });
+                              }}
+                              onUpdateDificuldade={(dificuldade) => {
+                                updateDificuldade.mutate({ id: quarto.id, dificuldade: dificuldade as any });
+                              }}
+                              onSetQuartoRevisando={() => {
+                                setQuartoRevisandoId(quarto.id);
+                                setObservacoesRevisao(quarto.observacoesRevisao || "");
+                              }}
+                              updateStatusPending={updateStatus.isPending}
+                              deleteQuartoPending={deleteQuarto.isPending}
+                            />
+                          ))}
+                        </SortableContext>
+                      </DndContext>
                     </div>
                   ))}
                 </div>

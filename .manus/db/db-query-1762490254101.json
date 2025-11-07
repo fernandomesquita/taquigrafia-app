@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, codigoQuarto, dataRegistro, revisor FROM quartos ORDER BY dataRegistro DESC LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3FZ1nxfVKsSpRCQ.root --database FVEpaYxJCyLFdXRTbRBHKh --execute SELECT id, codigoQuarto, dataRegistro, revisor FROM quartos ORDER BY dataRegistro DESC LIMIT 5",
+  "rows": [
+    {
+      "id": "5196b7a7-2dba-4967-bf51-4cfed02dbc82",
+      "codigoQuarto": "100-2",
+      "dataRegistro": "2025-11-05 14:01:39",
+      "revisor": "NULL"
+    },
+    {
+      "id": "5bbaf7e5-7b9d-47ea-a8f8-24ef81383dc2",
+      "codigoQuarto": "100-3",
+      "dataRegistro": "2025-11-05 14:01:39",
+      "revisor": "NULL"
+    },
+    {
+      "id": "a5add735-8a6f-4f95-8194-bb84c7f1553c",
+      "codigoQuarto": "100-1",
+      "dataRegistro": "2025-10-30 02:37:12",
+      "revisor": "João Silva"
+    },
+    {
+      "id": "03e479ab-5579-41a1-adfa-318dbca4850d",
+      "codigoQuarto": "78804-18",
+      "dataRegistro": "2025-10-21 12:33:41",
+      "revisor": "NULL"
+    },
+    {
+      "id": "ed7990fc-5160-4b89-b609-553979dc2785",
+      "codigoQuarto": "78804-19",
+      "dataRegistro": "2025-10-21 12:33:41",
+      "revisor": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcodigoQuarto\tdataRegistro\trevisor\n5196b7a7-2dba-4967-bf51-4cfed02dbc82\t100-2\t2025-11-05 14:01:39\tNULL\n5bbaf7e5-7b9d-47ea-a8f8-24ef81383dc2\t100-3\t2025-11-05 14:01:39\tNULL\na5add735-8a6f-4f95-8194-bb84c7f1553c\t100-1\t2025-10-30 02:37:12\tJoão Silva\n03e479ab-5579-41a1-adfa-318dbca4850d\t78804-18\t2025-10-21 12:33:41\tNULL\ned7990fc-5160-4b89-b609-553979dc2785\t78804-19\t2025-10-21 12:33:41\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}
