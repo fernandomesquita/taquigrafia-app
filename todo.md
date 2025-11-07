@@ -225,3 +225,15 @@
 - [x] Garantir que setas up/down funcionem corretamente (mantidos como fallback)
 - [x] Testar que data/hora original nunca é alterada (campo ordem usado para reordenação)
 
+
+
+
+## Bug: Drag-and-drop com Ordem Aleatória
+
+- [x] Investigar lógica de handleDragEnd no Dashboard.tsx (problema: múltiplas chamadas sequenciais)
+- [x] Corrigir atribuição de ordem para respeitar posição exata do drop (implementado reordenarBatch)
+- [x] Criar endpoint batch para atualizar todas as ordens de uma vez
+- [x] Usar arrayMove para calcular nova ordem completa
+- [ ] Testar reordenação em diferentes cenários no ambiente de produção
+
+

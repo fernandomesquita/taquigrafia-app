@@ -158,6 +158,18 @@ export async function updateQuartoStatus(id: string, userId: string, status: "pe
     .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
 }
 
+export async function reordenarQuartosBatch(userId: string, ordens: { id: string; ordem: number }[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Atualizar ordem de cada quarto em uma transação
+  for (const { id, ordem } of ordens) {
+    await db.update(quartos)
+      .set({ ordem })
+      .where(and(eq(quartos.id, id), eq(quartos.userId, userId)));
+  }
+}
+
 export async function reordenarQuartos(quartoId: string, userId: string, direcao: 'up' | 'down', data: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

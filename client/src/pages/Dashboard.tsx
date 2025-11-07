@@ -65,20 +65,20 @@ export default function Dashboard() {
       const oldIndex = quartosData.findIndex((q) => q.id === active.id);
       const newIndex = quartosData.findIndex((q) => q.id === over.id);
 
-      // Determinar direção
-      const direcao = newIndex < oldIndex ? 'up' : 'down';
+      // Criar nova ordem usando arrayMove
+      const novaOrdem = arrayMove(quartosData, oldIndex, newIndex);
       
-      // Calcular quantas posições mover
-      const passos = Math.abs(newIndex - oldIndex);
+      // Criar mapa de IDs para novas posições (1-indexed)
+      const novasOrdens = novaOrdem.map((quarto, index) => ({
+        id: quarto.id,
+        ordem: index + 1
+      }));
       
-      // Executar reordenação múltiplas vezes se necessário
-      for (let i = 0; i < passos; i++) {
-        reordenarQuartos.mutate({
-          quartoId: active.id as string,
-          direcao,
-          data
-        });
-      }
+      // Enviar todas as atualizações de uma vez
+      reordenarQuartosBatch.mutate({
+        data,
+        ordens: novasOrdens
+      });
     }
   };
 
@@ -170,6 +170,16 @@ export default function Dashboard() {
   });
 
   const reordenarQuartos = trpc.quartos.reordenar.useMutation({
+    onSuccess: () => {
+      utils.quartos.listByMonth.invalidate();
+      toast.success("Ordem atualizada!");
+    },
+    onError: (error) => {
+      toast.error(`Erro ao reordenar: ${error.message}`);
+    },
+  });
+
+  const reordenarQuartosBatch = trpc.quartos.reordenarBatch.useMutation({
     onSuccess: () => {
       utils.quartos.listByMonth.invalidate();
       toast.success("Ordem atualizada!");

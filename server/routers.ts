@@ -125,6 +125,19 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    reordenarBatch: protectedProcedure
+      .input(z.object({
+        data: z.string(), // data no formato DD/MM/YYYY
+        ordens: z.array(z.object({
+          id: z.string(),
+          ordem: z.number()
+        }))
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.reordenarQuartosBatch(ctx.user.id, input.ordens);
+        return { success: true };
+      }),
+
     // TEMPORÁRIO: Endpoint para corrigir dataRegistro de quartos específicos
     fixDataRegistro: protectedProcedure
       .input(z.object({
