@@ -222,6 +222,6 @@
 - [x] Corrigir quarto 79877-13 para dia 06/11/2025 (banco de produção Railway)
 - [x] Criar documento ERROS_CRITICOS.md com checklist diário
 - [x] Implementar drag and drop para reordenação de quartos (biblioteca @dnd-kit)
-- [ ] Garantir que setas up/down funcionem corretamente
-- [ ] Testar que data/hora original nunca é alterada
+- [x] Garantir que setas up/down funcionem corretamente (mantidos como fallback)
+- [x] Testar que data/hora original nunca é alterada (campo ordem usado para reordenação)
 
