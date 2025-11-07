@@ -5,6 +5,25 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.5.4] - 2025-11-07
+
+### Adicionado
+- **Edição de Data e Hora**: Novo campo no modal "Editar Quarto" para alterar data/hora de registro
+  - Input tipo `datetime-local` para seleção intuitiva de data e hora
+  - Formatação automática da data atual do quarto ao abrir o modal
+  - Validação `required` no frontend
+
+### Modificado
+- **Endpoint update**: Agora aceita parâmetro opcional `dataRegistro` (ISO string)
+  - Validação e conversão de data no backend
+  - Atualização condicional apenas quando dataRegistro é fornecido
+- **Interface do Modal**: Campo "Data e Hora" posicionado entre "Observação" e "Dificuldade"
+
+### Casos de Uso
+- Corrigir data/hora de quartos registrados incorretamente
+- Ajustar registros retroativos
+- Manter histórico preciso de trabalho
+
 ## [1.5.3] - 2025-11-07
 
 ### Corrigido
