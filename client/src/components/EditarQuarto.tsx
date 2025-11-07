@@ -21,6 +21,7 @@ interface EditarQuartoProps {
     codigoQuarto: string;
     observacao?: string | null;
     dificuldade: "NA" | "Facil" | "Medio" | "Dificil";
+    dataRegistro: Date;
   };
 }
 
@@ -29,6 +30,19 @@ export function EditarQuarto({ quarto }: EditarQuartoProps) {
   const [codigo, setCodigo] = useState(quarto.codigoQuarto);
   const [observacao, setObservacao] = useState(quarto.observacao || "");
   const [dificuldade, setDificuldade] = useState(quarto.dificuldade);
+  
+  // Formatar data para input datetime-local (YYYY-MM-DDTHH:mm)
+  const formatarDataParaInput = (data: Date) => {
+    const d = new Date(data);
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const dia = String(d.getDate()).padStart(2, '0');
+    const hora = String(d.getHours()).padStart(2, '0');
+    const minuto = String(d.getMinutes()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}T${hora}:${minuto}`;
+  };
+  
+  const [dataHora, setDataHora] = useState(formatarDataParaInput(quarto.dataRegistro));
 
   const utils = trpc.useUtils();
   const updateQuarto = trpc.quartos.update.useMutation({
@@ -49,6 +63,7 @@ export function EditarQuarto({ quarto }: EditarQuartoProps) {
       codigoQuarto: codigo,
       observacao: observacao || undefined,
       dificuldade,
+      dataRegistro: new Date(dataHora).toISOString(),
     });
   };
 
@@ -88,6 +103,19 @@ export function EditarQuarto({ quarto }: EditarQuartoProps) {
               onChange={(e) => setObservacao(e.target.value)}
               rows={3}
             />
+          </div>
+          <div>
+            <Label htmlFor="dataHora">Data e Hora</Label>
+            <Input
+              id="dataHora"
+              type="datetime-local"
+              value={dataHora}
+              onChange={(e) => setDataHora(e.target.value)}
+              required
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Data e hora do registro do quarto
+            </p>
           </div>
           <div>
             <Label htmlFor="dificuldade">Dificuldade</Label>

@@ -237,3 +237,13 @@
 - [ ] Testar reordenação em diferentes cenários no ambiente de produção
 
 
+
+
+
+## Feature: Editar Data e Hora do Quarto
+
+- [x] Adicionar campos de data e hora no modal de edição (input datetime-local)
+- [x] Atualizar endpoint update para aceitar dataRegistro (ISO string)
+- [x] Validar formato de data/hora no frontend (required)
+- [ ] Testar edição de data/hora em ambiente de produção
+

@@ -161,6 +161,7 @@ export const appRouter = router({
         codigoQuarto: z.string(),
         observacao: z.string().optional(),
         dificuldade: z.enum(["NA", "Facil", "Medio", "Dificil"]).optional(),
+        dataRegistro: z.string().optional(), // ISO string
       }))
       .mutation(async ({ ctx, input }) => {
         // Validar formato sessão-quarto
@@ -171,13 +172,19 @@ export const appRouter = router({
         
         const [_, sessao, numeroQuarto] = match;
         
-        await db.updateQuarto(input.id, ctx.user.id, {
+        const updates: any = {
           codigoQuarto: input.codigoQuarto,
           sessao,
           numeroQuarto,
           observacao: input.observacao,
           dificuldade: input.dificuldade,
-        });
+        };
+        
+        if (input.dataRegistro) {
+          updates.dataRegistro = new Date(input.dataRegistro);
+        }
+        
+        await db.updateQuarto(input.id, ctx.user.id, updates);
         return { success: true };
       }),
 
