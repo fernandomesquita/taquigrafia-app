@@ -5,6 +5,15 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.4.4] - 2025-11-06
+
+### Corrigido
+- **Bug de Ordenação Intercalada**: Corrigido problema onde quartos criados em horários diferentes apareciam intercalados
+- **Causa Raiz**: Ordenação considerava apenas o campo `ordem`, sem critério de desempate por `dataRegistro`
+- **Solução**: Adicionado `dataRegistro` como critério secundário de ordenação quando `ordem` for igual
+- **Logs de Diagnóstico**: Adicionados logs temporários para monitorar cálculo de ordem na criação de quartos
+- **Impacto**: Quartos agora aparecem em ordem cronológica correta dentro do mesmo dia
+
 ## [1.4.3] - 2025-11-06
 
 ### Corrigido

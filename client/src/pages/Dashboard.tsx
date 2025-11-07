@@ -240,9 +240,14 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, typeof quartos>);
     
-    // Ordenar quartos dentro de cada data por ordem
+    // Ordenar quartos dentro de cada data por ordem, depois por dataRegistro
     Object.keys(agrupados).forEach(data => {
-      agrupados[data].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+      agrupados[data].sort((a, b) => {
+        const ordemDiff = (a.ordem || 0) - (b.ordem || 0);
+        if (ordemDiff !== 0) return ordemDiff;
+        // Se ordem for igual, ordenar por dataRegistro
+        return new Date(a.dataRegistro).getTime() - new Date(b.dataRegistro).getTime();
+      });
     });
 
     // Calcular trabalho de hoje

@@ -22,12 +22,22 @@ export const appRouter = router({
         // Processar códigos separados por vírgula
         const codigosArray = input.codigos.split(',').map(c => c.trim()).filter(c => c.length > 0);
         
-        // Buscar a maior ordem do dia atual para definir ordem inicial
-        const hoje = new Date();
-        const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
-        const fimHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
-        const quartosHoje = await db.getQuartosByUserIdAndDateRange(ctx.user.id, inicioHoje, fimHoje);
-        let maxOrdem = quartosHoje.length > 0 ? Math.max(...quartosHoje.map(q => q.ordem || 0)) : 0;
+        // Definir a data de registro que será usada para todos os quartos
+        const dataRegistro = new Date();
+        
+        // Buscar a maior ordem do dia baseada na data que será registrada
+        const inicioDia = new Date(dataRegistro.getFullYear(), dataRegistro.getMonth(), dataRegistro.getDate(), 0, 0, 0);
+        const fimDia = new Date(dataRegistro.getFullYear(), dataRegistro.getMonth(), dataRegistro.getDate(), 23, 59, 59);
+        const quartosDoDia = await db.getQuartosByUserIdAndDateRange(ctx.user.id, inicioDia, fimDia);
+        
+        console.log('[DEBUG] dataRegistro:', dataRegistro);
+        console.log('[DEBUG] inicioDia:', inicioDia);
+        console.log('[DEBUG] fimDia:', fimDia);
+        console.log('[DEBUG] quartosDoDia encontrados:', quartosDoDia.length);
+        console.log('[DEBUG] ordens dos quartos:', quartosDoDia.map(q => ({ id: q.codigoQuarto, ordem: q.ordem })));
+        
+        let maxOrdem = quartosDoDia.length > 0 ? Math.max(...quartosDoDia.map(q => q.ordem || 0)) : 0;
+        console.log('[DEBUG] maxOrdem calculada:', maxOrdem);
         
         const quartosCreated = [];
         for (const codigo of codigosArray) {
@@ -49,7 +59,7 @@ export const appRouter = router({
             sessao,
             numeroQuarto,
             observacao: input.observacao,
-            dataRegistro: new Date(),
+            dataRegistro,
             ordem: maxOrdem,
           });
           quartosCreated.push(quarto);

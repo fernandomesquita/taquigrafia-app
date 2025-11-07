@@ -200,3 +200,12 @@
 - [x] Verificar se o problema está na busca do quarto no banco de dados
 - [x] Corrigir lógica de reordenação para funcionar com quartos novos - CAUSA: Problema de timezone entre frontend e backend
 
+
+
+
+## Bug: Quartos Criados de Forma Intercalada
+
+- [x] Investigar por que quartos estão sendo criados de forma intercalada, ignorando ordem cronológica
+- [x] Verificar como o campo `ordem` é atribuído quando novos quartos são criados
+- [x] Corrigir lógica para garantir que quartos sejam ordenados por hora de criação - Adicionado dataRegistro como critério de desempate
+
