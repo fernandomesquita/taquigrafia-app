@@ -247,3 +247,15 @@
 - [x] Validar formato de data/hora no frontend (required)
 - [ ] Testar edição de data/hora em ambiente de produção
 
+
+
+
+## Feature: Dropdown Automático de Revisores
+
+- [x] Modificar checkbox REVISADO para abrir dropdown ao marcar (já existia)
+- [x] Implementar lista de revisores em ordem alfabética (já ordenado com .sort())
+- [x] Permitir adicionar novo revisor digitando (com feedback visual)
+- [x] Mostrar TODOS os revisores quando campo vazio (ao clicar no input)
+- [x] Filtrar revisores quando usuário digita
+- [x] Indicador visual quando novo revisor será adicionado
+

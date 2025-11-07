@@ -1112,7 +1112,7 @@ export default function Dashboard() {
                 <Label htmlFor="revisor">Revisor *</Label>
                 <Input
                   id="revisor"
-                  placeholder="Nome do revisor"
+                  placeholder="Digite o nome ou selecione abaixo"
                   value={revisor}
                   onChange={(e) => {
                     setRevisor(e.target.value);
@@ -1122,11 +1122,11 @@ export default function Dashboard() {
                   onBlur={() => setTimeout(() => setMostrarSugestoes(false), 200)}
                   required
                 />
-                {mostrarSugestoes && revisor && revisoresUnicos.length > 0 && (
+                {mostrarSugestoes && revisoresUnicos.length > 0 && (
                   <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
-                    {revisoresUnicos
-                      .filter(r => r.toLowerCase().includes(revisor.toLowerCase()))
-                      .map((r) => (
+                    {revisor.trim() === '' ? (
+                      // Mostrar TODOS os revisores quando campo está vazio
+                      revisoresUnicos.map((r) => (
                         <button
                           key={r}
                           type="button"
@@ -1139,8 +1139,30 @@ export default function Dashboard() {
                           {r}
                         </button>
                       ))
-                    }
+                    ) : (
+                      // Filtrar quando usuário está digitando
+                      revisoresUnicos
+                        .filter(r => r.toLowerCase().includes(revisor.toLowerCase()))
+                        .map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                            onClick={() => {
+                              setRevisor(r);
+                              setMostrarSugestoes(false);
+                            }}
+                          >
+                            {r}
+                          </button>
+                        ))
+                    )}
                   </div>
+                )}
+                {revisor.trim() !== '' && !revisoresUnicos.includes(revisor.trim()) && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    ℹ️ Novo revisor: "{revisor.trim()}" será adicionado
+                  </p>
                 )}
               </div>
               <div>
