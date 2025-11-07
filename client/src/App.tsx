@@ -5,23 +5,21 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import AdminFix from "./pages/AdminFix";
 import Dashboard from "./pages/Dashboard";
 import Consolidado from "./pages/Consolidado";
 import Relatorio from "./pages/Relatorio";
 import Backup from "./pages/Backup";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
       <Route path={"/"} component={Home} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/consolidado" component={Consolidado} />
-      <Route path="/relatorio" component={Relatorio} />
-      <Route path="/backup" component={Backup} />
+      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/consolidado"} component={Consolidado} />
+      <Route path={"/relatorio"} component={Relatorio} />
+      <Route path={"/backup"} component={Backup} />
+      <Route path={"/admin-fix"} component={AdminFix} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
