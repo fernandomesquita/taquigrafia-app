@@ -207,5 +207,6 @@
 
 - [x] Investigar por que quartos estão sendo criados de forma intercalada, ignorando ordem cronológica
 - [x] Verificar como o campo `ordem` é atribuído quando novos quartos são criados
-- [x] Corrigir lógica para garantir que quartos sejam ordenados por hora de criação - Adicionado dataRegistro como critério de desempate
+- [x] Mudar para ordenação puramente cronológica por dataRegistro (eliminar dependência de ordem)
+- [x] Atualizar função de reordenação para modificar dataRegistro ao invés de ordem
 

@@ -29,15 +29,7 @@ export const appRouter = router({
         const inicioDia = new Date(dataRegistro.getFullYear(), dataRegistro.getMonth(), dataRegistro.getDate(), 0, 0, 0);
         const fimDia = new Date(dataRegistro.getFullYear(), dataRegistro.getMonth(), dataRegistro.getDate(), 23, 59, 59);
         const quartosDoDia = await db.getQuartosByUserIdAndDateRange(ctx.user.id, inicioDia, fimDia);
-        
-        console.log('[DEBUG] dataRegistro:', dataRegistro);
-        console.log('[DEBUG] inicioDia:', inicioDia);
-        console.log('[DEBUG] fimDia:', fimDia);
-        console.log('[DEBUG] quartosDoDia encontrados:', quartosDoDia.length);
-        console.log('[DEBUG] ordens dos quartos:', quartosDoDia.map(q => ({ id: q.codigoQuarto, ordem: q.ordem })));
-        
         let maxOrdem = quartosDoDia.length > 0 ? Math.max(...quartosDoDia.map(q => q.ordem || 0)) : 0;
-        console.log('[DEBUG] maxOrdem calculada:', maxOrdem);
         
         const quartosCreated = [];
         for (const codigo of codigosArray) {

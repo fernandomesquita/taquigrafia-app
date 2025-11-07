@@ -5,6 +5,15 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.5.0] - 2025-11-06
+
+### Alterado
+- **BREAKING CHANGE**: Ordenação de quartos agora é puramente cronológica por `dataRegistro`
+- **Motivo**: Campo `ordem` estava causando intercalação de quartos criados em horários diferentes
+- **Impacto**: Quartos sempre aparecem em ordem cronológica de criação
+- **Reordenação**: Função de reordenação agora troca os timestamps de `dataRegistro` ao invés do campo `ordem`
+- **Benefício**: Elimina problemas de sincronização e garante consistência na ordenação
+
 ## [1.4.4] - 2025-11-06
 
 ### Corrigido

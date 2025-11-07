@@ -174,7 +174,7 @@ export async function reordenarQuartos(quartoId: string, userId: string, direcao
   const dataInicio = new Date(dataRegistroQuarto.getFullYear(), dataRegistroQuarto.getMonth(), dataRegistroQuarto.getDate(), 0, 0, 0);
   const dataFim = new Date(dataRegistroQuarto.getFullYear(), dataRegistroQuarto.getMonth(), dataRegistroQuarto.getDate(), 23, 59, 59);
   
-  // Buscar todos os quartos do mesmo dia
+  // Buscar todos os quartos do mesmo dia, ordenados por dataRegistro
   const quartosDoDia = await db.select().from(quartos)
     .where(
       and(
@@ -183,7 +183,7 @@ export async function reordenarQuartos(quartoId: string, userId: string, direcao
         lte(quartos.dataRegistro, dataFim)
       )
     )
-    .orderBy(asc(quartos.ordem));
+    .orderBy(asc(quartos.dataRegistro));
   
   // Encontrar o índice do quarto que está sendo movido
   const index = quartosDoDia.findIndex(q => q.id === quartoId);
@@ -202,14 +202,14 @@ export async function reordenarQuartos(quartoId: string, userId: string, direcao
   const quartoAtual = quartosDoDia[index];
   const quartoTroca = quartosDoDia[indexTroca];
   
-  // Trocar as ordens
-  const ordemTemp = quartoAtual.ordem || 0;
+  // Trocar os timestamps de dataRegistro
+  const dataTemp = new Date(quartoAtual.dataRegistro);
   await db.update(quartos)
-    .set({ ordem: quartoTroca.ordem || 0 })
+    .set({ dataRegistro: new Date(quartoTroca.dataRegistro) })
     .where(eq(quartos.id, quartoAtual.id));
   
   await db.update(quartos)
-    .set({ ordem: ordemTemp })
+    .set({ dataRegistro: dataTemp })
     .where(eq(quartos.id, quartoTroca.id));
 }
 
