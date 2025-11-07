@@ -5,6 +5,14 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.4.3] - 2025-11-06
+
+### Corrigido
+- **Bug de Reordenação**: Corrigido erro "Quarto não encontrado" ao tentar reorganizar quartos recém-adicionados
+- **Causa Raiz**: Problema de timezone entre frontend e backend ao buscar quartos do mesmo dia
+- **Solução**: Função `reordenarQuartos` agora busca o quarto específico primeiro e usa sua `dataRegistro` do banco de dados para encontrar outros quartos do mesmo dia
+- **Impacto**: Reordenação funciona corretamente independente de quando o quarto foi adicionado
+
 ## [1.4.2] - 2025-11-05
 
 ### Corrigido

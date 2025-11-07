@@ -162,11 +162,19 @@ export async function reordenarQuartos(quartoId: string, userId: string, direcao
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // Buscar todos os quartos do mesmo dia
-  const [dia, mes, ano] = data.split('/');
-  const dataInicio = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 0, 0, 0);
-  const dataFim = new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), 23, 59, 59);
+  // Primeiro, buscar o quarto específico para obter sua data de registro
+  const quartoAlvo = await db.select().from(quartos)
+    .where(and(eq(quartos.id, quartoId), eq(quartos.userId, userId)))
+    .limit(1);
   
+  if (quartoAlvo.length === 0) throw new Error("Quarto não encontrado");
+  
+  // Usar a data de registro do quarto para buscar outros quartos do mesmo dia
+  const dataRegistroQuarto = new Date(quartoAlvo[0].dataRegistro);
+  const dataInicio = new Date(dataRegistroQuarto.getFullYear(), dataRegistroQuarto.getMonth(), dataRegistroQuarto.getDate(), 0, 0, 0);
+  const dataFim = new Date(dataRegistroQuarto.getFullYear(), dataRegistroQuarto.getMonth(), dataRegistroQuarto.getDate(), 23, 59, 59);
+  
+  // Buscar todos os quartos do mesmo dia
   const quartosDoDia = await db.select().from(quartos)
     .where(
       and(
@@ -179,7 +187,7 @@ export async function reordenarQuartos(quartoId: string, userId: string, direcao
   
   // Encontrar o índice do quarto que está sendo movido
   const index = quartosDoDia.findIndex(q => q.id === quartoId);
-  if (index === -1) throw new Error("Quarto não encontrado");
+  if (index === -1) throw new Error("Quarto não encontrado na lista do dia");
   
   // Determinar o quarto com o qual trocar
   let indexTroca: number;

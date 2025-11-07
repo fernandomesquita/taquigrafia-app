@@ -191,3 +191,12 @@
 - [x] Verificar se a filtragem está correta ao usar filtro Global
 - [x] Corrigir lógica de filtragem se necessário - BUG: todosQuartos.data deveria ser apenas todosQuartos
 
+
+
+
+## Bug: Erro ao Reordenar Quartos Recém-Adicionados
+
+- [x] Investigar por que aparece "Erro ao reordenar: Quarto não encontrado" ao tentar reorganizar quartos recém-adicionados
+- [x] Verificar se o problema está na busca do quarto no banco de dados
+- [x] Corrigir lógica de reordenação para funcionar com quartos novos - CAUSA: Problema de timezone entre frontend e backend
+
