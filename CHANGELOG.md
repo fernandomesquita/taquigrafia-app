@@ -5,6 +5,23 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.5.3] - 2025-11-07
+
+### Corrigido
+- **Bug Crítico do Drag-and-drop**: Quartos agora são posicionados exatamente onde você soltar
+  - Problema: Múltiplas chamadas sequenciais de reordenação causavam ordem aleatória e inconsistente
+  - Solução: Implementado batch update que recalcula TODAS as ordens de uma vez
+- **Consistência de Dados**: Ordem agora é sempre sequencial (1, 2, 3, 4...) sem lacunas
+
+### Adicionado
+- **Endpoint reordenarBatch**: Novo endpoint que recebe array de `{id, ordem}` para atualizar múltiplos quartos
+- **Função reordenarQuartosBatch**: Atualiza todas as ordens em uma única transação
+
+### Modificado
+- **handleDragEnd**: Agora usa `arrayMove` da biblioteca @dnd-kit para calcular nova ordem completa
+- **Lógica de Reordenação**: Uma única chamada ao backend ao invés de múltiplas chamadas sequenciais
+- **Feedback Visual**: Mais responsivo e consistente durante o arrasto
+
 ## [1.5.2] - 2025-11-07
 
 ### Adicionado
