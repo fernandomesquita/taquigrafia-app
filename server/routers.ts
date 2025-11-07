@@ -125,6 +125,23 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    // TEMPORÁRIO: Endpoint para corrigir dataRegistro de quartos específicos
+    fixDataRegistro: protectedProcedure
+      .input(z.object({
+        codigoQuarto: z.string(),
+        novaData: z.string(), // ISO string
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const quartos = await db.getQuartosByUserId(ctx.user.id);
+        const quarto = quartos.find(q => q.codigoQuarto === input.codigoQuarto);
+        if (!quarto) throw new Error(`Quarto ${input.codigoQuarto} não encontrado`);
+        
+        await db.updateQuarto(quarto.id, ctx.user.id, {
+          dataRegistro: new Date(input.novaData),
+        });
+        return { success: true, quarto: input.codigoQuarto };
+      }),
+
     update: protectedProcedure
       .input(z.object({
         id: z.string(),

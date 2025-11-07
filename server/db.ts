@@ -202,14 +202,14 @@ export async function reordenarQuartos(quartoId: string, userId: string, direcao
   const quartoAtual = quartosDoDia[index];
   const quartoTroca = quartosDoDia[indexTroca];
   
-  // Trocar os timestamps de dataRegistro
-  const dataTemp = new Date(quartoAtual.dataRegistro);
+  // Trocar os valores de ordem (NUNCA alterar dataRegistro)
+  const ordemTemp = quartoAtual.ordem || 0;
   await db.update(quartos)
-    .set({ dataRegistro: new Date(quartoTroca.dataRegistro) })
+    .set({ ordem: quartoTroca.ordem || 0 })
     .where(eq(quartos.id, quartoAtual.id));
   
   await db.update(quartos)
-    .set({ dataRegistro: dataTemp })
+    .set({ ordem: ordemTemp })
     .where(eq(quartos.id, quartoTroca.id));
 }
 
@@ -219,6 +219,7 @@ export async function updateQuarto(id: string, userId: string, updates: {
   numeroQuarto?: string;
   observacao?: string;
   dificuldade?: "NA" | "Facil" | "Medio" | "Dificil";
+  dataRegistro?: Date;
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

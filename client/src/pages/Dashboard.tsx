@@ -240,9 +240,15 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, typeof quartos>);
     
-    // Ordenar quartos dentro de cada data por dataRegistro (ordem cronológica)
+    // Ordenar quartos: primeiro por ordem (se definida), depois por dataRegistro
     Object.keys(agrupados).forEach(data => {
       agrupados[data].sort((a, b) => {
+        // Se ambos têm ordem definida, usar ordem
+        if (a.ordem != null && b.ordem != null) {
+          const ordemDiff = a.ordem - b.ordem;
+          if (ordemDiff !== 0) return ordemDiff;
+        }
+        // Caso contrário, ordenar por dataRegistro (cronológico)
         return new Date(a.dataRegistro).getTime() - new Date(b.dataRegistro).getTime();
       });
     });

@@ -210,3 +210,17 @@
 - [x] Mudar para ordenação puramente cronológica por dataRegistro (eliminar dependência de ordem)
 - [x] Atualizar função de reordenação para modificar dataRegistro ao invés de ordem
 
+
+
+
+## URGENTE: Reverter Mudanças Problemáticas de Ordenação
+
+- [x] Reverter função de reordenação para NÃO alterar dataRegistro
+- [x] Usar campo `ordem` para reordenação manual mantendo datas originais
+- [x] Criar endpoint temporário fixDataRegistro para correções manuais
+- [ ] Corrigir quarto 79877-14 para dia 07/11/2025
+- [ ] Corrigir quarto 79877-13 para dia 06/11/2025
+- [ ] Implementar drag and drop para reordenação
+- [ ] Garantir que setas up/down funcionem corretamente
+- [ ] Testar que data/hora original nunca é alterada
+

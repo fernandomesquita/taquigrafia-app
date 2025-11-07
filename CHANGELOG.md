@@ -5,7 +5,17 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
-## [1.5.0] - 2025-11-06
+## [1.5.1] - 2025-11-07
+
+### Corrigido
+- **REVERSÃO URGENTE**: Revertida mudança da v1.5.0 que alterava `dataRegistro` na reordenação
+- **Problema**: Reordenação estava mudando a data/hora original dos quartos, causando caos na organização
+- **Solução**: Função de reordenação volta a usar campo `ordem`, NUNCA alterando `dataRegistro`
+- **Ordenação**: Agora usa `ordem` (se definida) como prioridade, com `dataRegistro` como critério de desempate
+- **Endpoint Temporário**: Adicionado `fixDataRegistro` para corrigir quartos com datas erradas
+- **Garantia**: Data e hora originais dos quartos são sempre preservadas
+
+## [1.5.0] - 2025-11-06 [REVERTIDA]
 
 ### Alterado
 - **BREAKING CHANGE**: Ordenação de quartos agora é puramente cronológica por `dataRegistro`
@@ -13,6 +23,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Impacto**: Quartos sempre aparecem em ordem cronológica de criação
 - **Reordenação**: Função de reordenação agora troca os timestamps de `dataRegistro` ao invés do campo `ordem`
 - **Benefício**: Elimina problemas de sincronização e garante consistência na ordenação
+- **NOTA**: Esta versão foi revertida na v1.5.1 devido a problemas críticos
 
 ## [1.4.4] - 2025-11-06
 
