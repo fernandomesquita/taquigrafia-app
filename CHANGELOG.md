@@ -5,6 +5,33 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.5.2] - 2025-11-07
+
+### Adicionado
+- **Drag-and-drop**: Implementado sistema de arrastar e soltar para reordenar quartos usando biblioteca @dnd-kit
+- **Componente SortableQuartoItem**: Novo componente dedicado para itens arrastáveis com handle visual
+- **Ícone Grip**: Handle visual (≡) à esquerda de cada quarto para indicar que pode ser arrastado
+- **Sensores de Mouse e Teclado**: Suporte completo para arrastar com mouse ou navegar com teclado
+- **Feedback Visual**: Opacidade 50% durante o arrasto para indicar item sendo movido
+- **Documento ERROS_CRITICOS.md**: Checklist diário para prevenir confusão entre banco de desenvolvimento e produção
+
+### Corrigido
+- **Dados Corrompidos no Banco**: Quartos 79877-13 e 79877-14 corrigidos no banco de produção Railway
+  - Quarto 79877-14: data restaurada para 07/11/2025 00:43:51
+  - Quarto 79877-13: data restaurada para 06/11/2025 23:42:00
+- **Confusão de Bancos**: Documentado processo correto para acessar banco de produção (usar `database_url` minúsculas)
+
+### Modificado
+- **Botões de Setas**: Mantidos como fallback ao lado do drag-and-drop para compatibilidade
+- **Interface de Reordenação**: Mais intuitiva e moderna com arrasto visual
+
+### Documentação
+- Criado `ERROS_CRITICOS.md` com:
+  - Checklist diário de verificação de banco
+  - Alerta sobre variáveis de ambiente corretas
+  - Histórico de erros e lições aprendidas
+  - Validação obrigatória de número de quartos antes de operações críticas
+
 ## [1.5.1] - 2025-11-07
 
 ### Corrigido
