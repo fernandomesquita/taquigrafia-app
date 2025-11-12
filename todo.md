@@ -259,3 +259,13 @@
 - [x] Filtrar revisores quando usuário digita
 - [x] Indicador visual quando novo revisor será adicionado
 
+
+
+
+## Bug Crítico: Página Inicial com Erro 404
+
+- [x] Investigar causa do erro 404 (botão "Fazer Login" redireciona para /login que não existe)
+- [x] Corrigir redirecionamentos no Home.tsx para usar OAuth direto
+- [ ] Fazer commit e push das correções
+- [ ] Deploy no Railway para aplicar correções
+
