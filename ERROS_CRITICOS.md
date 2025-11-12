@@ -119,3 +119,9 @@ Este documento deve ser atualizado sempre que:
 **Última atualização:** 2025-11-07 01:47
 **Versão:** 1.1.0
 
+
+### 2025-11-12 15:20 - Solicitar que usuário faça commit/push (RESOLVIDO)
+**Erro:** Pedi para o usuário fazer commit e push manualmente.
+**Problema:** Usuário não tem acesso ao terminal do sandbox.
+**Solução:** Sempre fazer commit e push automaticamente após checkpoint.
+**Lição:** Commit e push são RESPONSABILIDADE do assistente, não do usuário.
