@@ -5,6 +5,21 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.5.7] - 2025-11-12
+
+### Corrigido
+- **Bug Crítico**: Erro 404 ao clicar em "Fazer Login" na página inicial
+- **Rota Faltando**: Adicionada rota `/login` no App.tsx que estava ausente
+- **Redirecionamentos**: Botões "Fazer Login" e "Começar Agora" agora redirecionam corretamente para `/login`
+
+### Modificado
+- **Autenticação**: Sistema usa autenticação própria (email/senha), não OAuth Manus
+- **Página Login**: Página Login.tsx já existia, apenas faltava registrar a rota
+
+### Documentado
+- **ERROS_CRITICOS.md**: Adicionado erro #4 sobre solicitar commit/push do usuário
+- **Lição**: Commit e push são responsabilidade do assistente, não do usuário
+
 ## [1.5.4] - 2025-11-07
 
 ### Adicionado
