@@ -269,3 +269,14 @@
 - [ ] Fazer commit e push das correções
 - [ ] Deploy no Railway para aplicar correções
 
+
+
+
+## Bug: Falta Página de Login
+
+- [x] Criar página Login.tsx com formulário email/senha (já existia)
+- [x] Adicionar rota /login no App.tsx
+- [x] Integrar com backend via trpc.auth.login (já implementado)
+- [x] Salvar token JWT no localStorage (já implementado)
+- [x] Corrigir botões "Fazer Login" e "Começar Agora" no Home.tsx
+

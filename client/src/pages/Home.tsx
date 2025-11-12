@@ -33,7 +33,7 @@ export default function Home() {
             {APP_LOGO && <img src={APP_LOGO} alt="Logo" className="h-8" />}
             <h1 className="text-2xl font-bold text-gray-900">{APP_TITLE}</h1>
           </div>
-          <Button onClick={() => window.location.href = 'https://api.manus.im/oauth/authorize?client_id=' + import.meta.env.VITE_APP_ID + '&redirect_uri=' + window.location.origin + '/api/oauth/callback'}>
+          <Button onClick={() => setLocation("/login")}>
             Fazer Login
           </Button>
         </div>
@@ -51,7 +51,7 @@ export default function Home() {
           <div className="mt-8">
             <Button
               size="lg"
-              onClick={() => window.location.href = 'https://api.manus.im/oauth/authorize?client_id=' + import.meta.env.VITE_APP_ID + '&redirect_uri=' + window.location.origin + '/api/oauth/callback'}
+              onClick={() => setLocation("/login")}
               className="text-lg px-8 py-6"
             >
               Começar Agora
